@@ -24,6 +24,11 @@ public class PlayerModel
     public int TotalScore { get; set; }
     
     /// <summary>
+    /// Represents the number of loners achieved by the player in the entire tournament.
+    /// </summary>
+    public int TotalLoners { get; set; }
+    
+    /// <summary>
     /// Instantiates a new player with a provided name and host status.
     /// </summary>
     /// <param name="playerName"> Represents the name that will identify the player. </param>
@@ -34,5 +39,6 @@ public class PlayerModel
         this.IsHost = isHost;
         this.RoundEntries = new List<RoundEntryModel>();
         this.TotalScore = 0;
+        this.TotalLoners = 0;
     }
 }
