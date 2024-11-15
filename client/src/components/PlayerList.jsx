@@ -1,5 +1,3 @@
-import React from "react";
-
 function PlayerList({ players }) {
   return (
     <div className="bg-white rounded-lg border-2 w-80 mt-4 p-2">
