@@ -1,6 +1,6 @@
 function PlayerList({ players }) {
   return (
-    <div className="bg-white rounded-lg border-2 w-80 mt-4 p-2">
+    <div className="mt-4 w-80 rounded-lg border-2 bg-white p-2">
       <h2 className="text-xs text-slate-400">Waiting for players to join...</h2>
       <ul>
         {players.map((player) => {
