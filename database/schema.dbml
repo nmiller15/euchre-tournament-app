@@ -1,0 +1,71 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table rooms {
+  id uuid [primary key]
+  host_user_id uuid [Ref: - users.id]
+  code char(4) [unique, not null]
+}
+
+Table users {
+  room_id uuid [Ref: - rooms.id]
+  id uuid [primary key]
+  username varchar
+}
+
+Table connections {
+  id uuid [primary key]
+  room_id uuid [Ref: > rooms.id]
+  user_id uuid [Ref: > users.id]
+  connected_at timestamp
+  disconnected_at timestamp
+}
+
+Table rounds {
+  room_id uuid [Ref: > rooms.id]
+  id uuid [primary key]
+  number int 
+
+  Note: "A schedule is defined as a sequence of rounds belonging to a specific room."
+  Indexes {
+    (room_id, number) [unique]
+  }
+}
+
+
+Table round_submissions {
+  id uuid [primary key]
+  round_id uuid [Ref: > rounds.id]
+  user_id uuid [Ref: > users.id]
+  score int
+  loners int
+
+  Indexes {
+    (round_id, user_id) [unique]
+  }
+}
+
+Table tables {
+  round_id uuid [Ref: > rounds.id]
+  id uuid [primary key]
+  number int
+
+  Indexes {
+    (round_id, number) [unique]
+  }
+}
+
+Table teams_users {
+  id uuid [primary key]
+  team_id uuid [Ref: > teams.id]
+  user_id uuid [Ref: > users.id]
+
+  Indexes {
+    (team_id, user_id) [unique]
+  }
+}
+
+Table teams {
+  table_id uuid [Ref: > tables.id]
+  id uuid [primary key]
+}
