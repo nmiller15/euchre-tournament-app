@@ -1,44 +1,25 @@
-var builder = WebApplication.CreateBuilder(args);
+using Fleck;
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+string serverAddress = "127.0.0.1";
+var port = 8080;
+var server = new WebSocketServer($"ws://{serverAddress}:{port}/");
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+server.Start(ws =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
+    ws.OnOpen = () =>
     {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast")
-    .WithOpenApi();
+        Console.WriteLine($"Connected");
+    };
+    ws.OnClose = () =>
+    {
+        Console.WriteLine("Disconnected");
+    };
+    ws.OnMessage = message =>
+    {
+        Console.WriteLine($"Received: {message}");
+    };
+});
 
-app.Run();
+Console.WriteLine($"The server is started at ws://{serverAddress}:{port}/");
+Console.ReadLine();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
