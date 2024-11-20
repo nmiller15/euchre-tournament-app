@@ -1,3 +1,6 @@
+using Fleck;
+using Newtonsoft.Json;
+
 namespace EuchreTournamentLibrary;
 
 public class UserModel
@@ -11,6 +14,13 @@ public class UserModel
     /// Represents a unique identifier for the user.
     /// </summary>
     public string Guid { get; }
+    
+    
+    /// <summary>
+    /// Represents the connection object that a User is currently using to interact with the server.
+    /// </summary>
+    [Newtonsoft.Json.JsonIgnore]
+    public IWebSocketConnection Connection { get; set; }
     
     /// <summary>
     /// Represents the state of the user in the pre-game lobby of a room. All users must be ready to start the game.
@@ -44,14 +54,21 @@ public class UserModel
     /// <param name="guid"> Represents a unique identifier generated at the creation of the user.</param>
     /// <param name="username"> Represents the name that will identify the user. </param>
     /// <param name="isHost"> Represents the sum of all completed round score integers. </param>
-    public UserModel(string guid, string username, bool isHost)
+    public UserModel(string guid, string username, bool isHost, IWebSocketConnection connection)
     {
-        this.Username = username;
-        this.Guid = guid;
-        this.IsReady = false;
-        this.IsHost = isHost;
-        this.RoundEntries = new List<RoundEntryModel>();
-        this.TotalScore = 0;
-        this.TotalLoners = 0;
+        Username = username;
+        Guid = guid;
+        Connection = connection;
+        IsReady = false;
+        IsHost = isHost;
+        RoundEntries = new List<RoundEntryModel>();
+        TotalScore = 0;
+        TotalLoners = 0;
+    }
+
+    public void SendMessageToUser(MessageModel message)
+    {
+        var messageJson = JsonConvert.SerializeObject(message, Formatting.Indented);
+        Connection.Send(messageJson);
     }
 }

@@ -1,26 +1,23 @@
+using Newtonsoft.Json;
+
 namespace EuchreTournamentLibrary;
 
 public class RoomModel
 {
-    /// <summary>
-    /// Represents the name that will be used to describe the room to players once joined.
-    /// </summary>
-    public string RoomName { get; set; }
-    
     /// <summary>
     /// Represents the unique four-digit string that is used by players to join the room.
     /// </summary>
     public string RoomCode { get; private set; }
     
     /// <summary>
-    /// The PlayerModel object of the player who created the room, identified as the host.
+    /// The UserModel object of the player who created the room, identified as the host.
     /// </summary>
-    public PlayerModel HostPlayer { get; set; }
+    public UserModel HostUser { get; set; }
     
     /// <summary>
-    /// A list of players in descending order by score, ties are broken by number of loners.
+    /// A Dictionary of players, defined by their Guid.
     /// </summary>
-    public List<PlayerModel> Players { get; set; }
+    public Dictionary<string, UserModel> Users { get; set; }
     
     /// <summary>
     /// A list of rounds in ascending order by round number.
@@ -34,26 +31,47 @@ public class RoomModel
     /// <param name="roomName">
     /// Represents the name that will be used to describe the room to players once joined.
     /// </param>
-    /// <param name="hostPlayer">
-    /// The PlayerModel object of the player who is creating the room, identified as the host.
+    /// <param name="hostUser">
+    /// The UserModel object of the player who is creating the room, identified as the host.
     /// </param>
-    public RoomModel(string roomName, PlayerModel hostPlayer)
+    public RoomModel(UserModel hostUser)
     {
-        this.RoomName = roomName;
-        this.GenerateRoomCode();
-        this.HostPlayer = hostPlayer;
-        this.Players = new List<PlayerModel> { this.HostPlayer };
-        this.Schedule = new List<RoundModel>();
+        RoomCode = GenerateRoomCode();
+        HostUser = hostUser;
+        Users = new Dictionary<string, UserModel>();
+        AddUser(hostUser.Guid, hostUser);
+        Schedule = new List<RoundModel>();
     }
 
     /// <summary>
     /// Creates and attaches random string of alpha characters that players can use to join the room.
     /// Will not create a code if one has already been generated.
     /// </summary>
-    /// <
-    private void GenerateRoomCode()
+    private string GenerateRoomCode()
     {
-        // TODO: Implement a random generator
-        this.RoomCode =  "AXTR";
+        Random random = new Random();
+        string code = "";
+        for (int i = 0; i < 4; i++)
+        {
+            int randomNumber = random.Next(0, 26);
+            char randomAlpha = (char)('A' + randomNumber);
+
+            code = $"{code}{randomAlpha}";
+        }
+        return code;
+    }
+    
+    public void AddUser(string guid, UserModel user)
+    {
+        Users.Add(guid, user);
+    }
+
+    public void BroadcastToRoom(MessageModel message)
+    {
+        var jsonMessage = JsonConvert.SerializeObject(message, Formatting.Indented);
+        foreach (var guid in Users.Keys)
+        {
+            Users[guid].Connection.Send(jsonMessage);
+        }
     }
 }
