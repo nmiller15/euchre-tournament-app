@@ -81,4 +81,9 @@ public class UserModel
     {
         IsReady = false;
     }
+
+    public void DisconnectUser()
+    {
+        Connection.Close();
+    }
 }
