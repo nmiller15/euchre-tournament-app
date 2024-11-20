@@ -172,12 +172,24 @@ public class WebSocketServerModel
             case "User:ReadyUp":
                 user.ReadyUpUser();
                 room.Users[user.Guid].ReadyUpUser();
+                room.IsReady = room.CheckUsersReadyState();
                 room.BroadcastToRoom(new MessageModel("User:ReadyUp", $"User {user.Username} is ready.", room));
                 break;
             case "User:Unready":
                 user.UnreadyUser();
                 room.Users[user.Guid].UnreadyUser();
+                room.IsReady = room.CheckUsersReadyState();
                 room.BroadcastToRoom(new MessageModel("User:Unready", $"User {user.Username} is not ready.", room));
+                break;
+            case "Room:Start":
+                break;
+            case "Team:UpdatePoints":
+                break;
+            case "RoundEntry:UpdateLoners":
+                break;
+            case "Room:SubmitEntry":
+                break;
+            case "Room:ShareResults":
                 break;
             default:
                 user.SendMessageToUser(new MessageModel("Error", "Unknown message type."));

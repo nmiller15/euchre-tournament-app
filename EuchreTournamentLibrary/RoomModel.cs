@@ -15,6 +15,12 @@ public class RoomModel
     public UserModel HostUser { get; set; }
     
     /// <summary>
+    /// Marked true when a ReadyUp message is submitted by a user and all players are ready to start.
+    /// This property is checked when the host attempts to start the game.
+    /// </summary>
+    public bool IsReady { get; set; }
+    
+    /// <summary>
     /// A Dictionary of players, defined by their Guid.
     /// </summary>
     public Dictionary<string, UserModel> Users { get; set; }
@@ -38,6 +44,7 @@ public class RoomModel
     {
         RoomCode = GenerateRoomCode();
         HostUser = hostUser;
+        IsReady = false;
         Users = new Dictionary<string, UserModel>();
         AddUser(hostUser.Guid, hostUser);
         Schedule = new List<RoundModel>();
@@ -49,16 +56,18 @@ public class RoomModel
     /// </summary>
     private string GenerateRoomCode()
     {
-        Random random = new Random();
-        string code = "";
-        for (int i = 0; i < 4; i++)
-        {
-            int randomNumber = random.Next(0, 26);
-            char randomAlpha = (char)('A' + randomNumber);
-
-            code = $"{code}{randomAlpha}";
-        }
-        return code;
+        // Random random = new Random();
+        // string code = "";
+        // for (int i = 0; i < 4; i++)
+        // {
+        //     int randomNumber = random.Next(0, 26);
+        //     char randomAlpha = (char)('A' + randomNumber);
+        //
+        //     code = $"{code}{randomAlpha}";
+        // }
+        // return code;
+        // For Dev:
+        return "ABCD";
     }
     
     public void AddUser(string guid, UserModel user)
@@ -73,5 +82,16 @@ public class RoomModel
         {
             Users[guid].Connection.Send(jsonMessage);
         }
+    }
+
+    public bool CheckUsersReadyState()
+    {
+        if (Users.Count < 4) return false;
+        foreach (var uuid in Users.Keys)
+        {
+            if (!Users[uuid].IsReady) return false;
+        }
+
+        return true;
     }
 }
