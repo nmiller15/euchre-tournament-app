@@ -71,4 +71,14 @@ public class UserModel
         var messageJson = JsonConvert.SerializeObject(message, Formatting.Indented);
         Connection.Send(messageJson);
     }
+
+    public void ReadyUpUser()
+    {
+        IsReady = true;
+    }
+
+    public void UnreadyUser()
+    {
+        IsReady = false;
+    }
 }

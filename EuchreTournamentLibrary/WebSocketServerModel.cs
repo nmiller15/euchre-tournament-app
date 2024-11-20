@@ -139,6 +139,36 @@ public class WebSocketServerModel
         connection.Send($"Hello {user.Username}");
         Broadcast($"{user.Username}: {message}");
     }
+    
+    private void HandleMessage(UserModel user, IWebSocketConnection connection, ClientMessageModel message)
+    {
+        Console.WriteLine($"Received message from {user.Username} in room {message.RoomCode}");
+        
+        // Identify the relevant room
+        var roomFound = Rooms.TryGetValue(message.RoomCode, out var room);
+        if (!roomFound)
+        {
+            user.SendMessageToUser(new MessageModel("Error", "No room with matching code found."));
+            return;
+        }
+        
+        switch (message.Type)
+        {
+            case "User:ReadyUp":
+                user.ReadyUpUser();
+                room.Users[user.Guid].ReadyUpUser();
+                room.BroadcastToRoom(new MessageModel("User:ReadyUp", $"User {user.Username} is ready.", room));
+                break;
+            case "User:Unready":
+                user.UnreadyUser();
+                room.Users[user.Guid].UnreadyUser();
+                room.BroadcastToRoom(new MessageModel("User:Unready", $"User {user.Username} is not ready.", room));
+                break;
+            default:
+                user.SendMessageToUser(new MessageModel("Error", "Unknown message type."));
+                break;
+        }
+    }
 
     static string ParseValueFromParamsKey(IWebSocketConnection connection, string param)
     {
@@ -152,10 +182,19 @@ public class WebSocketServerModel
 
     public void Broadcast(string message)
     {
-        var connectionKeys = Connections.Keys.ToList();
-        foreach (var key in connectionKeys)
+        var jsonMessage = JsonConvert.SerializeObject(message, Formatting.Indented);
+        foreach (var guid in Users.Keys)
         {
-            Connections[key].Send(message);
+            Users[guid].Connection.Send(jsonMessage);
+        }
+    }
+
+    public void Broadcast(MessageModel message)
+    {
+        var jsonMessage = JsonConvert.SerializeObject(message, Formatting.Indented);
+        foreach (var guid in Users.Keys)
+        {
+            Users[guid].Connection.Send(jsonMessage);
         }
     }
 
