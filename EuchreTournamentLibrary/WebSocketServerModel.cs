@@ -63,22 +63,9 @@ public class WebSocketServerModel
                 connection.OnClose = () => HandleClose(Users[guid], Connections[guid]);
                 connection.OnMessage = message =>
                 {
-                    if (IsValidJson(message))
+                    if (ServerUtils.IsValidJson(message))
                     {
-                        var messageObject = JsonConvert.DeserializeObject<JObject>(message);
-                        var clientMessage = new ClientMessageModel();
-                        foreach (var property in messageObject.Properties())
-                        {
-                            string key = property.Name;
-                            var value = property.Value.ToString();
-
-                            // Use reflection to set properties dynamically
-                            var propInfo = clientMessage.GetType().GetProperty(key);
-                            if (propInfo != null && propInfo.CanWrite)
-                            {
-                                propInfo.SetValue(clientMessage, value);
-                            }
-                        }
+                        ClientMessageModel clientMessage = ServerUtils.ParseClientMessage(message);
                         HandleMessage(Users[guid], Connections[guid], clientMessage);
                     }
                     else
@@ -92,7 +79,7 @@ public class WebSocketServerModel
 
     private void HandleOpen(string guid, IWebSocketConnection connection)
     {
-        var username = ParseValueFromParamsKey(connection, "username");
+        var username = ServerUtils.ParseValueFromParamsKey(connection, "username");
         if (string.IsNullOrWhiteSpace(username))
         {
             connection.Send(
@@ -101,7 +88,7 @@ public class WebSocketServerModel
                 )
             );
         }
-        var createRoom = ParseValueFromParamsKey(connection, "createRoom") == "true";
+        var createRoom = ServerUtils.ParseValueFromParamsKey(connection, "createRoom") == "true";
         var user = new UserModel(guid, username, createRoom, connection);
         
         if (createRoom)
@@ -119,15 +106,17 @@ public class WebSocketServerModel
         else
         {
             // User is attempting to join room.
-            var roomCode = ParseValueFromParamsKey(connection, "roomCode");
+            var roomCode = ServerUtils.ParseValueFromParamsKey(connection, "roomCode");
             if (string.IsNullOrWhiteSpace(roomCode))
             {
                 user.SendMessageToUser(new MessageModel("Error", "Missing room code."));
+                user.DisconnectUser();
             }
             var roomFound = Rooms.TryGetValue(roomCode, out var room);
             if (!roomFound)
             {
                 user.SendMessageToUser(new MessageModel("Error", "No room with this code found."));
+                user.DisconnectUser();
             }
             else
             {
@@ -155,7 +144,7 @@ public class WebSocketServerModel
         RemoveConnection(user.Guid);
         RemoveUser(user.Guid);
         
-        Broadcast($"User {user.Username} has disconnected.");
+        BroadcastToServer($"User {user.Username} has disconnected.");
         Console.WriteLine($"User {user.Username} has disconnected.");
     }
 
@@ -163,7 +152,7 @@ public class WebSocketServerModel
     {
         Console.WriteLine($"Received message: {message}");
         connection.Send($"Hello {user.Username}");
-        Broadcast($"{user.Username}: {message}");
+        BroadcastToServer($"{user.Username}: {message}");
     }
     
     private void HandleMessage(UserModel user, IWebSocketConnection connection, ClientMessageModel message)
@@ -196,17 +185,7 @@ public class WebSocketServerModel
         }
     }
 
-    static string ParseValueFromParamsKey(IWebSocketConnection connection, string param)
-    {
-        var path = connection.ConnectionInfo.Path;
-        var queryString = path.Split('?')[1];
-        var paramsCollection = HttpUtility.ParseQueryString(queryString);
-        var value = paramsCollection[param];
-
-        return value;
-    }
-
-    public void Broadcast(string message)
+    public void BroadcastToServer(string message)
     {
         var jsonMessage = JsonConvert.SerializeObject(message, Formatting.Indented);
         foreach (var guid in Users.Keys)
@@ -215,7 +194,7 @@ public class WebSocketServerModel
         }
     }
 
-    public void Broadcast(MessageModel message)
+    public void BroadcastToServer(MessageModel message)
     {
         var jsonMessage = JsonConvert.SerializeObject(message, Formatting.Indented);
         foreach (var guid in Users.Keys)
@@ -244,25 +223,8 @@ public class WebSocketServerModel
         Connections.Remove(guid);
     }
 
-    private bool IsValidJson(string strInput)
-    {
-        return true;
-        // if (string.IsNullOrWhiteSpace(strInput)) return false;
-        // strInput = strInput.Trim();
-        // if ((strInput.StartsWith("{") && strInput.EndsWith("}") ||
-        //      strInput.StartsWith("[") && strInput.EndsWith("]")))
-        // {
-        //     try
-        //     {
-        //         JToken.Parse(strInput);
-        //     }
-        //     catch (JsonReaderException)
-        //     {
-        //         return false;
-        //     }
-        // }
-        //
-        // return false;
-    }
+    
+
+    
 
 }
