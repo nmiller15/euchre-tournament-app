@@ -10,7 +10,7 @@ public class RoundModel
     /// <summary>
     /// A list of players who are not at a table in this round.
     /// </summary>
-    public List<PlayerModel> PlayersSittingOut { get; set; }
+    public List<UserModel> PlayersSittingOut { get; set; }
     
     /// <summary>
     /// A list of tables associated with this round.
@@ -29,7 +29,7 @@ public class RoundModel
     /// <param name="roundNumber">Represents the order in which the round is placed within the room schedule.</param>
     /// <param name="roundTables">A list of entries submitted by players/teams containing score information.</param>
     /// <param name="playersSittingOut">A list of players who are not at a table in this round.</param>
-    public RoundModel(int roundNumber, List<TableModel> roundTables, List<PlayerModel> playersSittingOut)
+    public RoundModel(int roundNumber, List<TableModel> roundTables, List<UserModel> playersSittingOut)
     {
         RoundNumber = roundNumber;
         RoundTables = roundTables;

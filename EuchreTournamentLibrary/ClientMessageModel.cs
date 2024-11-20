@@ -3,6 +3,13 @@ namespace EuchreTournamentLibrary;
 public class ClientMessageModel : MessageModel
 {
     public string RoomCode { get; set; }
+
+    public ClientMessageModel()
+    {
+        Type = "Unknown";
+        RoomCode = "UNWN";
+        Message = "None";
+    }
     
     public ClientMessageModel(string type, string roomCode, string message)
     {

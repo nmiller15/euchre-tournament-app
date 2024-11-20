@@ -2,6 +2,8 @@ using System.Text.Json;
 using System.Web;
 using Fleck;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace EuchreTournamentLibrary;
 
@@ -59,7 +61,31 @@ public class WebSocketServerModel
                 
                 HandleOpen(guid, connection);
                 connection.OnClose = () => HandleClose(Users[guid], Connections[guid]);
-                connection.OnMessage = message => HandleMessage(Users[guid], Connections[guid], message);
+                connection.OnMessage = message =>
+                {
+                    if (IsValidJson(message))
+                    {
+                        var messageObject = JsonConvert.DeserializeObject<JObject>(message);
+                        var clientMessage = new ClientMessageModel();
+                        foreach (var property in messageObject.Properties())
+                        {
+                            string key = property.Name;
+                            var value = property.Value.ToString();
+
+                            // Use reflection to set properties dynamically
+                            var propInfo = clientMessage.GetType().GetProperty(key);
+                            if (propInfo != null && propInfo.CanWrite)
+                            {
+                                propInfo.SetValue(clientMessage, value);
+                            }
+                        }
+                        HandleMessage(Users[guid], Connections[guid], clientMessage);
+                    }
+                    else
+                    {
+                        HandleMessage(Users[guid], Connections[guid], message);
+                    }
+                };
             };
         });
     }
@@ -216,6 +242,27 @@ public class WebSocketServerModel
     private void RemoveConnection(string guid)
     {
         Connections.Remove(guid);
+    }
+
+    private bool IsValidJson(string strInput)
+    {
+        return true;
+        // if (string.IsNullOrWhiteSpace(strInput)) return false;
+        // strInput = strInput.Trim();
+        // if ((strInput.StartsWith("{") && strInput.EndsWith("}") ||
+        //      strInput.StartsWith("[") && strInput.EndsWith("]")))
+        // {
+        //     try
+        //     {
+        //         JToken.Parse(strInput);
+        //     }
+        //     catch (JsonReaderException)
+        //     {
+        //         return false;
+        //     }
+        // }
+        //
+        // return false;
     }
 
 }

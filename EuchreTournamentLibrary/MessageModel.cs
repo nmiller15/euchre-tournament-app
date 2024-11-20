@@ -34,6 +34,12 @@ public class MessageModel
     /// </summary>
     public TeamModel? TeamPayload { get; set; }
 
+    public MessageModel()
+    {
+        Type = "Unknown";
+        Message = "None";
+    }
+
     public MessageModel(string type, string message)
     {
         Type = type;

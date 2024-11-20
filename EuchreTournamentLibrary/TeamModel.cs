@@ -11,7 +11,7 @@ public class TeamModel
     /// <summary>
     /// Represents the two players that are associated with a given team.
     /// </summary>
-    public List<PlayerModel> Players { get; set; }
+    public List<UserModel> Players { get; set; }
     
     /// <summary>
     /// Represents the points that are scored in the round by the given team.
@@ -24,7 +24,7 @@ public class TeamModel
     /// </summary>
     /// <param name="roundNumber">Represents the round to which this team belongs</param>
     /// <param name="players">Represents the two players that are associated with a given team.</param>
-    public TeamModel(int roundNumber, List<PlayerModel> players)
+    public TeamModel(int roundNumber, List<UserModel> players)
     {
         RoundNumber = roundNumber;
         Players = players;
