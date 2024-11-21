@@ -19,7 +19,6 @@ public static class ServerUtils
     
     public static bool IsValidJson(string strInput)
     {
-        // return true;
         if (string.IsNullOrWhiteSpace(strInput)) return false;
         strInput = strInput.Trim();
         if ((strInput.StartsWith('{') && strInput.EndsWith('}') ||
