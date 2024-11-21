@@ -12,7 +12,7 @@ public class TableModel
     /// Represents the round to which this table belongs.
     /// Each table can only belong to one round.
     /// </summary>
-    public RoundModel Round { get; set; }
+    public int RoundNumber { get; set; }
     
     /// <summary>
     /// Represents the two teams that will play at this table.
@@ -24,12 +24,12 @@ public class TableModel
     /// Instantiates a new table given an identifying number, a round and two teams.
     /// </summary>
     /// <param name="number">Identifies where the players' match is located.</param>
-    /// <param name="round">Represents the round to which this table belongs.</param>
+    /// <param name="roundNumber">Represents the round to which this table belongs.</param>
     /// <param name="teams">Represents the two teams that will play at this table.</param>
-    public TableModel(int number, RoundModel round, List<TeamModel> teams)
+    public TableModel(int number, int roundNumber, List<TeamModel> teams)
     {
         Number = number;
-        Round = round;
+        RoundNumber = roundNumber;
         Teams = teams;
     }
 }
