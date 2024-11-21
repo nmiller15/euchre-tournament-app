@@ -26,6 +26,11 @@ public class RoomModel
     public Dictionary<string, UserModel> Users { get; set; }
     
     /// <summary>
+    /// A Dictionary of all Team objects instantiated that are associated with the room.
+    /// </summary>
+    public Dictionary<string, TeamModel> Teams { get; set; }
+    
+    /// <summary>
     /// A list of rounds in ascending order by round number.
     /// All other schedule information is located within the RoundModel.
     /// </summary>
@@ -145,7 +150,9 @@ public class RoomModel
                         Users[firstHalf[k].Guid],
                         Users[secondHalf[k].Guid]
                     ];
-                    TeamModel team = new TeamModel(roundNumber, teamUsers);
+                    string teamGuid = System.Guid.NewGuid().ToString();
+                    TeamModel team = new TeamModel(teamGuid, roundNumber, teamUsers);
+                    Teams.Add(team.Guid, team);
                     teams.Add(team);
                 }
             }
