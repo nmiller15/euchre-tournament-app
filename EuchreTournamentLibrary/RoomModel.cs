@@ -159,6 +159,8 @@ public class RoomModel
             while (teamsRight > teamsLeft + extraTeam)
             {
                 List<TeamModel> tableTeams = new List<TeamModel> { teams[teamsLeft], teams[teamsRight] };
+                teams[teamsLeft].TableNumber = teamsLeft + 1;
+                teams[teamsRight].TableNumber = teamsRight + 1;
                 tables.Add(new TableModel(teamsLeft + 1, roundNumber, tableTeams));
                 teamsLeft++;
                 teamsRight--;

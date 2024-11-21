@@ -8,6 +8,10 @@ public class TeamModel
     /// </summary>
     public int RoundNumber { get; set; }
     
+    public string Guid { get; private set; }
+    
+    public int TableNumber { get; set; }
+    
     /// <summary>
     /// Represents the two players that are associated with a given team.
     /// </summary>
@@ -28,5 +32,6 @@ public class TeamModel
     {
         RoundNumber = roundNumber;
         Players = players;
+        Guid = System.Guid.NewGuid().ToString();
     }
 }
