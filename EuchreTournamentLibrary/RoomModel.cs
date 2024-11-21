@@ -180,4 +180,10 @@ public class RoomModel
 
         Schedule = rounds;
     }
+
+    public int IncrementRound()
+    {
+        CurrentRound++;
+        return CurrentRound;
+    }
 }

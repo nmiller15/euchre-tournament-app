@@ -182,6 +182,20 @@ public class WebSocketServerModel
                 room.BroadcastToRoom(new MessageModel("User:Unready", $"User {user.Username} is not ready.", room));
                 break;
             case "Room:Start":
+                if (!user.IsHost)
+                {
+                    user.SendMessageToUser(new MessageModel("Error", "You are not a room host."));
+                    break;
+                }
+
+                if (!room.IsReady)
+                {
+                    user.SendMessageToUser(new MessageModel("Error", "Not enough players, or players are not ready."));
+                }
+
+                room.IncrementRound();
+                room.GenerateSchedule();
+                room.BroadcastToRoom(new MessageModel("Room:Schedule", "Schedule is generated.", room));
                 break;
             case "Team:UpdatePoints":
                 break;
