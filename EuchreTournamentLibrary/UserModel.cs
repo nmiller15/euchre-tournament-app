@@ -28,6 +28,11 @@ public class UserModel
     public bool IsReady { get; set; }
     
     /// <summary>
+    /// Represents whether is user object is being created only to indicate which other users are given a bye round.
+    /// </summary>
+    public bool IsByeIndicator { get; private set; }
+    
+    /// <summary>
     /// Represents each entry associated with a user. See RoundEntryModel for all associated properties.
     /// </summary>
     public List<RoundEntryModel> RoundEntries { get; set; }
@@ -60,10 +65,17 @@ public class UserModel
         Guid = guid;
         Connection = connection;
         IsReady = false;
+        IsByeIndicator = false;
         IsHost = isHost;
         RoundEntries = new List<RoundEntryModel>();
         TotalScore = 0;
         TotalLoners = 0;
+    }
+
+    public UserModel(string guid)
+    {
+        Guid = guid;
+        IsByeIndicator = true;
     }
 
     public void SendMessageToUser(MessageModel message)
