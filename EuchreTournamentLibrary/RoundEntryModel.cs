@@ -5,7 +5,7 @@ public class RoundEntryModel
     /// <summary>
     /// Represents the player who submitted the entry.
     /// </summary>
-    public UserModel ReportingPlayer { get; set; }
+    public string ReportingPlayerGuid { get; set; }
     
     /// <summary>
     /// Represents the team on behalf of which the entry was submitted.
@@ -34,10 +34,9 @@ public class RoundEntryModel
     /// <param name="reportingTeam">Represents the team on behalf of which the entry was submitted.</param>
     /// <param name="roundNumber">Represents the round to which the entry belongs.</param>
     /// <param name="score">Represents the points earned by the ReportingTeam in the RoundNumber.</param>
-    public RoundEntryModel(UserModel reportingPlayer, TeamModel reportingTeam, int roundNumber, int score, int loners)
+    public RoundEntryModel(string reportingPlayerGuid, int roundNumber, int score, int loners)
     {
-        ReportingPlayer = reportingPlayer;
-        ReportingTeam = reportingTeam;
+        ReportingPlayerGuid = reportingPlayerGuid;
         RoundNumber = roundNumber;
         Score = score;
     }

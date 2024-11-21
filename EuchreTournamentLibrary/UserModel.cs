@@ -59,6 +59,7 @@ public class UserModel
     /// <param name="guid"> Represents a unique identifier generated at the creation of the user.</param>
     /// <param name="username"> Represents the name that will identify the user. </param>
     /// <param name="isHost"> Represents the sum of all completed round score integers. </param>
+    
     public UserModel(string guid, string username, bool isHost, IWebSocketConnection connection)
     {
         Username = username;
@@ -70,6 +71,20 @@ public class UserModel
         RoundEntries = new List<RoundEntryModel>();
         TotalScore = 0;
         TotalLoners = 0;
+    }
+
+    [JsonConstructor]
+    public UserModel(string username, string guid, bool isReady, bool isByeIndicator,
+        List<RoundEntryModel> roundEntries, bool isHost, int totalScore, int totalLoners)
+    {
+        Username = username;
+        Guid = guid;
+        IsReady = isReady;
+        IsByeIndicator = isByeIndicator;
+        RoundEntries = roundEntries;
+        IsHost = isHost;
+        TotalScore = totalScore;
+        TotalLoners = totalLoners;
     }
 
     public UserModel(string guid)
@@ -97,5 +112,32 @@ public class UserModel
     public void DisconnectUser()
     {
         Connection.Close();
+    }
+    
+    public void UpdateRoundEntry(int roundNumber, int score, int loners)
+    {
+        var entryToUpdate = RoundEntries[roundNumber - 1];
+        if (entryToUpdate == null)
+        {
+            RoundEntries.Add(new RoundEntryModel(this.Guid, roundNumber, score, loners));
+        }
+        else
+        {
+            entryToUpdate.Score = score;
+            entryToUpdate.Loners = loners;
+        }
+    }
+    
+    public void UpdateRoundEntry(int roundNumber, int score)
+    {
+        if (RoundEntries.Count < roundNumber)
+        {
+            RoundEntries.Add(new RoundEntryModel(this.Guid, roundNumber, score, 0));
+        }
+        else
+        {
+            var entryToUpdate = RoundEntries[roundNumber - 1];
+            entryToUpdate.Score = score;
+        }
     }
 }

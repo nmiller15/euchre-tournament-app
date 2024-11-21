@@ -28,6 +28,7 @@ public class RoomModel
     /// <summary>
     /// A Dictionary of all Team objects instantiated that are associated with the room.
     /// </summary>
+    [Newtonsoft.Json.JsonIgnore]
     public Dictionary<string, TeamModel> Teams { get; set; }
     
     /// <summary>
@@ -53,6 +54,7 @@ public class RoomModel
         HostUser = hostUser;
         IsReady = false;
         Users = new Dictionary<string, UserModel>();
+        Teams = new Dictionary<string, TeamModel>();
         AddUser(hostUser.Guid, hostUser);
         Schedule = new List<RoundModel>();
     }

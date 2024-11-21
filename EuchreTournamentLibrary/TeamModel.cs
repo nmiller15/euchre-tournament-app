@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace EuchreTournamentLibrary;
 
 public class TeamModel
@@ -28,10 +30,26 @@ public class TeamModel
     /// </summary>
     /// <param name="roundNumber">Represents the round to which this team belongs</param>
     /// <param name="players">Represents the two players that are associated with a given team.</param>
-    public TeamModel(int roundNumber, List<UserModel> players)
+    public TeamModel(string guid, int roundNumber, List<UserModel> players)
     {
         RoundNumber = roundNumber;
         Players = players;
-        Guid = System.Guid.NewGuid().ToString();
+        Guid = guid;
+    }
+
+    public void UpdateScore(int score)
+    {
+        Score = score;
+        Players[0].UpdateRoundEntry(RoundNumber, score);
+        Players[1].UpdateRoundEntry(RoundNumber, score);
+    }
+
+    public void BroadcastToTeam(MessageModel message)
+    {
+        foreach (var player in Players)
+        {
+            var jsonMessage = JsonConvert.SerializeObject(message, Formatting.Indented);
+            player.Connection.Send(jsonMessage);
+        }
     }
 }

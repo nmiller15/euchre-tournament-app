@@ -198,8 +198,36 @@ public class WebSocketServerModel
                 room.BroadcastToRoom(new MessageModel("Room:Schedule", "Schedule is generated.", room));
                 break;
             case "Team:UpdatePoints":
+                // Protect against updating durring an invalid round.
+                if (room.CurrentRound < 1)
+                {
+                    user.SendMessageToUser(new MessageModel("Error", "The match has not started yet"));
+                    break;
+                }
+                // Validate that a payload of the correct name has been sent.
+                if (message.TeamPayload == null)
+                {
+                    user.SendMessageToUser(new MessageModel("Error", "Must include a TeamPayload object with this message type."));
+                    break;
+                }
+                
+                // Access the canonical Team model for the current team to update Score property.
+                if (!room.Teams.Keys.Contains(message.TeamPayload.Guid))
+                {
+                    user.SendMessageToUser(new MessageModel("Error", "Music include the GUID for a valid team in this room."));
+                    break;
+                }
+                var team = room.Teams[message.TeamPayload.Guid];
+
+                team.UpdateScore(message.TeamPayload.Score);
+                team.BroadcastToTeam(new MessageModel("Team:UpdatePoints", $"Your team score has changed to {team.Score}.", team));
                 break;
             case "RoundEntry:UpdateLoners":
+                if (room.CurrentRound < 1)
+                {
+                    user.SendMessageToUser(new MessageModel("Error", "The match has not started yet"));
+                    break;
+                }
                 break;
             case "Room:SubmitEntry":
                 break;

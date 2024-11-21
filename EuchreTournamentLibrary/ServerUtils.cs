@@ -45,13 +45,19 @@ public static class ServerUtils
         foreach (var property in messageObject.Properties())
         {
             string key = property.Name;
-            var value = property.Value.ToString();
-        
-            // Use reflection to set properties dynamically
             var propInfo = clientMessage.GetType().GetProperty(key);
-            if (propInfo != null && propInfo.CanWrite)
+
+            if (propInfo == null || !propInfo.CanWrite) continue;
+            if (propInfo.PropertyType == typeof(string))
             {
+                var value = property.Value.ToString();
                 propInfo.SetValue(clientMessage, value);
+                    
+            }
+            else
+            {
+                var deserializedValue = property.Value.ToObject(propInfo.PropertyType);
+                propInfo.SetValue(clientMessage, deserializedValue);
             }
         }
 
