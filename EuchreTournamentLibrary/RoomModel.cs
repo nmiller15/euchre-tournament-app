@@ -30,6 +30,8 @@ public class RoomModel
     /// All other schedule information is located within the RoundModel.
     /// </summary>
     public List<RoundModel> Schedule { get; set; }
+
+    public int CurrentRound { get; private set; } = 0;
     
     /// <summary>
     /// Instantiates a room class from a name for the room and a host player object.
@@ -93,5 +95,89 @@ public class RoomModel
         }
 
         return true;
+    }
+
+    public void GenerateSchedule()
+    {
+        var numUsers = Users.Count;
+        var numUsersPerTable = 4;
+        var numTablesPerRound = numUsers / numUsersPerTable;
+        var numUsersSittingPerRound = numUsers - (numTablesPerRound * numUsersPerTable);
+        var numRounds = numUsers + numUsersSittingPerRound - 1;
+
+        var rounds = new List<RoundModel>();
+
+        var usersList = Users.Values.ToList();
+
+        for (var i = 0; i < numUsersSittingPerRound; i++)
+        {
+            usersList.Add(new UserModel(System.Guid.NewGuid().ToString()));
+        }
+
+        for (var j = 0; j < numRounds; j++)
+        {
+            var roundNumber = j + 1;
+            var mid = usersList.Count / 2;
+
+            var firstHalf = usersList.GetRange(0, mid);
+            var secondHalf = usersList.GetRange(mid, mid); 
+            
+            secondHalf.Reverse();
+
+            List<UserModel> playersSittingOut = new List<UserModel>();
+            List<TeamModel> teams = new List<TeamModel>();
+            
+            for (var k = 0; k < mid; k++)
+            {
+                if (firstHalf[k].IsByeIndicator && secondHalf[k].IsByeIndicator) continue;
+                if (firstHalf[k].IsByeIndicator)
+                {
+                    playersSittingOut.Add(Users[secondHalf[k].Guid]);
+                }
+                else if (secondHalf[k].IsByeIndicator)
+                {
+                    playersSittingOut.Add(Users[firstHalf[k].Guid]);
+                }
+                else
+                {
+                    List<UserModel> teamUsers =
+                    [
+                        Users[firstHalf[k].Guid],
+                        Users[secondHalf[k].Guid]
+                    ];
+                    TeamModel team = new TeamModel(roundNumber, teamUsers);
+                    teams.Add(team);
+                }
+            }
+
+            List<TableModel> tables = new List<TableModel>();
+
+            var teamsLeft = 0;
+            var teamsRight = teams.Count - 1;
+            var extraTeam = teams.Count % 2;
+
+            while (teamsRight > teamsLeft + extraTeam)
+            {
+                List<TeamModel> tableTeams = new List<TeamModel> { teams[teamsLeft], teams[teamsRight] };
+                tables.Add(new TableModel(teamsLeft + 1, roundNumber, tableTeams));
+                teamsLeft++;
+                teamsRight--;
+            }
+
+            if (extraTeam == 1)
+            {
+                playersSittingOut.Add(teams[teamsRight].Players[0]);
+                playersSittingOut.Add(teams[teamsRight].Players[1]);
+            }
+            
+            rounds.Add(new RoundModel(roundNumber, tables, playersSittingOut));
+
+            var lastIndex = usersList.Count - 1;
+            var lastUser = usersList[lastIndex];
+            usersList.Remove(lastUser);
+            usersList.Insert(1, lastUser);
+        }
+
+        Schedule = rounds;
     }
 }
