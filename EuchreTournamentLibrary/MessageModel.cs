@@ -29,11 +29,15 @@ public class MessageModel
     /// </summary>
     public RoundModel? RoundPayload { get; set; }
 
-    
     /// <summary>
     /// A payload option for a message, contains a TeamModel.
     /// </summary>
     public TeamModel? TeamPayload { get; set; }
+
+    /// <summary>
+    /// A payload option for a message, contains a ResultsModel.
+    /// </summary>
+    public ResultsModel ResultsPayload { get; set; }
 
     public MessageModel()
     {
@@ -73,5 +77,12 @@ public class MessageModel
         Type = type;
         Message = message;
         TeamPayload = payload;
+    }
+
+    public MessageModel(string type, string message, ResultsModel payload)
+    {
+        Type = type;
+        Message = message;
+        ResultsPayload = payload;
     }
 }
