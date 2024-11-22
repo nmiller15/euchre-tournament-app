@@ -262,12 +262,17 @@ public class WebSocketServerModel
                 }
                 // Add the RoundEntry to the currentRound
                 round.SubmitRoundEntry(entryToSubmit);
-                // After each submit, check that the total number of round entries matches the number of active players to advance the round.
+
+                // End the game and send results to the host if the game is over
                 if (round.RoundNumber == room.Schedule.Count && round.RoundEntries.Count == RoundTables.Count * 4)
                 {
                     room.BroadcastToRoom(new MessageModel("Room:ToResults", "The final round has been completed.", room));
+                    var results = new ResultsModel(room);
+                    room.Results = results;
+                    room.HostUser.SendMessageToUser(new MessageModel("Room:Results", "The final results have been calculated.", results));
                 }
-                if (round.RoundEntries.Count == RoundTables.Count * 4)
+                // When all entries are submitted, change the round.
+                else if (round.RoundEntries.Count == RoundTables.Count * 4)
                 {
                     room.IncrementRound();
                     room.BroadcastToRoom(new MessageModel($"Room:NewRound", $"Round {room.CurrentRound} has begun.", room));
@@ -278,6 +283,13 @@ public class WebSocketServerModel
                 }
                 break;
             case "Room:ShareResults":
+                // TODO: Testing for this message handler.
+                if (!user.IsHost) 
+                {
+                    user.SendMessageToUser(new MessageModel("Error", "You are not a host."));
+                    break;
+                }
+                room.BroadcastToRoom(new MessageModel("Room:ShareResults", "The results have been shared by the host.", room.Results));
                 break;
             default:
                 user.SendMessageToUser(new MessageModel("Error", "Unknown message type."));

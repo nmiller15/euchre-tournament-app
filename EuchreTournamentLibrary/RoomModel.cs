@@ -38,6 +38,8 @@ public class RoomModel
     public List<RoundModel> Schedule { get; set; }
 
     public int CurrentRound { get; private set; } = 0;
+
+    public ResultsModel Results { get; set; }
     
     /// <summary>
     /// Instantiates a room class from a name for the room and a host player object.
