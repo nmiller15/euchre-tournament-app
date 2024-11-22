@@ -28,6 +28,7 @@ public class MessageModel
     /// A payload option for a message, contains a RoundModel.
     /// </summary>
     public RoundModel? RoundPayload { get; set; }
+
     
     /// <summary>
     /// A payload option for a message, contains a TeamModel.

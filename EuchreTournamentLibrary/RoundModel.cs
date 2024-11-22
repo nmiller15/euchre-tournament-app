@@ -36,6 +36,11 @@ public class RoundModel
         PlayersSittingOut = playersSittingOut;
         RoundScoreEntries = new List<RoundEntryModel>();
     }
+
+    public SubmitRoundEntry(RoundEntryModel entry)
+    {
+        RoundScoreEntries.Add(entry);
+    }
     
 
 }

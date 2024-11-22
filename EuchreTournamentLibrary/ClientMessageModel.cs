@@ -4,6 +4,8 @@ public class ClientMessageModel : MessageModel
 {
     public string RoomCode { get; set; }
 
+    public RoundEntryModel RoundEntryPayload { get; set; }
+
     public ClientMessageModel()
     {
         Type = "Unknown";
@@ -48,5 +50,13 @@ public class ClientMessageModel : MessageModel
         RoomCode = roomCode;
         Message = message;
         TeamPayload = payload;
+    }
+
+    public ClientMessageModel(string type, string roomCode, string message, RoundEntryModel payload)
+    {
+        Type = type;
+        RoomCode = roomCode;
+        Message = message;
+        RoundEntryPayload = payload;
     }
 }

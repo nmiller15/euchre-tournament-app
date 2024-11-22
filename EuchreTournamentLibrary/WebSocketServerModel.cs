@@ -198,7 +198,7 @@ public class WebSocketServerModel
                 room.BroadcastToRoom(new MessageModel("Room:Schedule", "Schedule is generated.", room));
                 break;
             case "Team:UpdatePoints":
-                // Protect against updating durring an invalid round.
+                // Protect against updating during an invalid round.
                 if (room.CurrentRound < 1)
                 {
                     user.SendMessageToUser(new MessageModel("Error", "The match has not started yet"));
@@ -214,7 +214,7 @@ public class WebSocketServerModel
                 // Access the canonical Team model for the current team to update Score property.
                 if (!room.Teams.Keys.Contains(message.TeamPayload.Guid))
                 {
-                    user.SendMessageToUser(new MessageModel("Error", "Music include the GUID for a valid team in this room."));
+                    user.SendMessageToUser(new MessageModel("Error", "Must include the GUID for a valid team in this room."));
                     break;
                 }
                 var team = room.Teams[message.TeamPayload.Guid];
@@ -222,14 +222,60 @@ public class WebSocketServerModel
                 team.UpdateScore(message.TeamPayload.Score);
                 team.BroadcastToTeam(new MessageModel("Team:UpdatePoints", $"Your team score has changed to {team.Score}.", team));
                 break;
-            case "RoundEntry:UpdateLoners":
+            case "RoundEntry:UpdateUserLoners":
+                //TODO: Testing for this message handler
+                // Protect against updating during an invalid round
                 if (room.CurrentRound < 1)
                 {
                     user.SendMessageToUser(new MessageModel("Error", "The match has not started yet"));
                     break;
                 }
+                // Validate that a payload of the correct name has been sent.
+                if (message.RoundEntryPayload == null)
+                {
+                    user.SendMessageToUser(new MessageModel("Error", "Must include a RoundEntryPayload object with this message type."));
+                    break;
+                }
+                // Access the cononical RoundEntry for the user.
+                user.UpdateRoundEntry(room.CurrentRound, message.RoundEntryPayload.Score, message.RoundEntryPayload.Loners);
+                team.BroadCastToTeam(new MessageModel("Team:UpdateUserLoners", $"User {user.Username} now has {message.RoundEntryPayload.Loners}", team));
                 break;
-            case "Room:SubmitEntry":
+            case "Round:SubmitEntry":
+                //TODO: Testing for this message handler
+                // Protect against submitting during an invalid round.
+                if (room.CurrentRound < 1)
+                {
+                    user.SendMessageToUser(new MessageModel("Error", "The match has not started yet"));
+                    break;
+                }
+                // Access the canonical RoundEntry and Round for the user and the currentRound object.
+                var entryToSubmit = user.RoundEntries.FirstOrDefault(entry => entry.RoundNumber == room.CurrentRound);
+                if (entryToSubmit == null)
+                {
+                    user.CreateEmptyRoundEntry(room.CurrentRound);
+                    break;
+                }
+                var round = room.Schedule.FirstOrDefault(round => round.RoundNumber == room.CurrentRound);
+                if (round == null)
+                {
+                    user.SendMessageToUser(new MessageModel("Error", "The round could not be found."));
+                }
+                // Add the RoundEntry to the currentRound
+                round.SubmitRoundEntry(entryToSubmit);
+                // After each submit, check that the total number of round entries matches the number of active players to advance the round.
+                if (round.RoundNumber == room.Schedule.Count && round.RoundEntries.Count == RoundTables.Count * 4)
+                {
+                    room.BroadcastToRoom(new MessageModel("Room:ToResults", "The final round has been completed.", room));
+                }
+                if (round.RoundEntries.Count == RoundTables.Count * 4)
+                {
+                    room.IncrementRound();
+                    room.BroadcastToRoom(new MessageModel($"Room:NewRound", $"Round {room.CurrentRound} has begun.", room));
+                }
+                else
+                {
+                    room.BroadcastToRoom(new MessageModel("Round:SubmitEntry", $"User {user.Username} has submitted a score.", round));
+                }
                 break;
             case "Room:ShareResults":
                 break;

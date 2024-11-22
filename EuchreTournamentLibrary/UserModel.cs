@@ -113,6 +113,11 @@ public class UserModel
     {
         Connection.Close();
     }
+
+    public void CreateEmptyRoundEntry(int roundNumber)
+    {
+        RoundEntries.Add(new RoundEntryModel(this.Guid, roundNumber, 0, 0));
+    }
     
     public void UpdateRoundEntry(int roundNumber, int score, int loners)
     {
