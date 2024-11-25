@@ -8,7 +8,7 @@ public class ResultsModel
 
     public UserModel Award1 { get; private set; }
 
-    public UserModel Award2 { get; private set; }
+    // public UserModel Award2 { get; private set; }
 
 
     public ResultsModel(RoomModel room)
@@ -17,13 +17,13 @@ public class ResultsModel
         Award1 = GenerateAward1(room.Users);
     }
 
-    private GenerateLeaderboard(List<UserModel> users)
+    private List<UserModel> GenerateLeaderboard(Dictionary<string, UserModel> users)
     {
-
+        return new List<UserModel>();
     }
 
-    private GenerateAward1(List<UserModel> users)
+    private UserModel GenerateAward1(Dictionary<string, UserModel> users)
     {
-
+        return new UserModel(new System.Guid().ToString());
     }
 }
