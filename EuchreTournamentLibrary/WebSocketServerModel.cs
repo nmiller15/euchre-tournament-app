@@ -169,6 +169,13 @@ public class WebSocketServerModel
         
         switch (message.Type)
         {
+            case "User":
+                user.SendMessageToUser(new MessageModel(
+                    "User:Create",
+                    $"Your user has been created with username {user.Username}.",
+                    user
+                ));
+                break;
             case "User:ReadyUp":
                 user.ReadyUpUser();
                 room.Users[user.Guid].ReadyUpUser();
