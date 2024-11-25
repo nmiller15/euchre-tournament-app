@@ -39,5 +39,16 @@ public class RoundEntryModel
         ReportingPlayerGuid = reportingPlayerGuid;
         RoundNumber = roundNumber;
         Score = score;
+        Loners = loners;
+    }
+
+    public void UpdateEntryScore(int score)
+    {
+        Score = score;
+    }
+
+    public void UpdateEntryLoners(int loners)
+    {
+        Loners = loners;
     }
 }

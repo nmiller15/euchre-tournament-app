@@ -37,7 +37,7 @@ public class RoundModel
         RoundScoreEntries = new List<RoundEntryModel>();
     }
 
-    public SubmitRoundEntry(RoundEntryModel entry)
+    public void SubmitRoundEntry(RoundEntryModel entry)
     {
         RoundScoreEntries.Add(entry);
     }

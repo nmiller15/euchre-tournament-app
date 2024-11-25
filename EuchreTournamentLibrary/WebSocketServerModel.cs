@@ -223,7 +223,6 @@ public class WebSocketServerModel
                 team.BroadcastToTeam(new MessageModel("Team:UpdatePoints", $"Your team score has changed to {team.Score}.", team));
                 break;
             case "RoundEntry:UpdateUserLoners":
-                //TODO: Testing for this message handler
                 // Protect against updating during an invalid round
                 if (room.CurrentRound < 1)
                 {
@@ -236,9 +235,9 @@ public class WebSocketServerModel
                     user.SendMessageToUser(new MessageModel("Error", "Must include a RoundEntryPayload object with this message type."));
                     break;
                 }
-                // Access the cononical RoundEntry for the user.
-                user.UpdateRoundEntry(room.CurrentRound, message.RoundEntryPayload.Score, message.RoundEntryPayload.Loners);
-                team.BroadCastToTeam(new MessageModel("Team:UpdateUserLoners", $"User {user.Username} now has {message.RoundEntryPayload.Loners}", team));
+                // Access the canonical RoundEntry for the user.
+                var updatedEntry = user.UpdateRoundEntry(room.CurrentRound, message.RoundEntryPayload.Score, message.RoundEntryPayload.Loners);
+                user.SendMessageToUser(new MessageModel("RoundEntry:UpdateUserLoners", $"User {user.Username} has {updatedEntry.Loners} loners.", updatedEntry));
                 break;
             case "Round:SubmitEntry":
                 //TODO: Testing for this message handler
@@ -264,7 +263,7 @@ public class WebSocketServerModel
                 round.SubmitRoundEntry(entryToSubmit);
 
                 // End the game and send results to the host if the game is over
-                if (round.RoundNumber == room.Schedule.Count && round.RoundEntries.Count == RoundTables.Count * 4)
+                if (round.RoundNumber == room.Schedule.Count && round.RoundScoreEntries.Count == round.RoundTables.Count * 4)
                 {
                     room.BroadcastToRoom(new MessageModel("Room:ToResults", "The final round has been completed.", room));
                     var results = new ResultsModel(room);
@@ -272,7 +271,7 @@ public class WebSocketServerModel
                     room.HostUser.SendMessageToUser(new MessageModel("Room:Results", "The final results have been calculated.", results));
                 }
                 // When all entries are submitted, change the round.
-                else if (round.RoundEntries.Count == RoundTables.Count * 4)
+                else if (round.RoundScoreEntries.Count == round.RoundTables.Count * 4)
                 {
                     room.IncrementRound();
                     room.BroadcastToRoom(new MessageModel($"Room:NewRound", $"Round {room.CurrentRound} has begun.", room));

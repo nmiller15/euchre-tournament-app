@@ -121,18 +121,16 @@ public class UserModel
     
     public RoundEntryModel UpdateRoundEntry(int roundNumber, int score, int loners)
     {
-        var entryToUpdate = RoundEntries[roundNumber - 1];
-        if (entryToUpdate == null)
+        if (RoundEntries.Count < roundNumber)
         {
-            RoundEntries.Add(new RoundEntryModel(this.Guid, roundNumber, score, loners));
-        }
-        else
-        {
-            entryToUpdate.Score = score;
-            entryToUpdate.Loners = loners;
+            RoundEntries.Add(new RoundEntryModel(this.Guid, roundNumber, score, 0));
         }
 
+        var entryToUpdate = RoundEntries[roundNumber - 1];
+        entryToUpdate.UpdateEntryScore(score);
+        entryToUpdate.UpdateEntryLoners(loners);
         return entryToUpdate;
+
     }
     
     public void UpdateRoundEntry(int roundNumber, int score)
