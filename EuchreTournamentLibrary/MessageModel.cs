@@ -28,6 +28,11 @@ public class MessageModel
     /// A payload option for a message, contains a RoundModel.
     /// </summary>
     public RoundModel? RoundPayload { get; set; }
+    
+    /// <summary>
+    /// A payload option for a message, contains a RoundEntryModel.
+    /// </summary>
+    public RoundEntryModel? RoundEntryPayload { get; set; }
 
     /// <summary>
     /// A payload option for a message, contains a TeamModel.
@@ -79,6 +84,12 @@ public class MessageModel
         TeamPayload = payload;
     }
 
+    public MessageModel(string type, string message, RoundEntryModel payload)
+    {
+        Type = type;
+        Message = message;
+        RoundEntryPayload = payload;
+    }
     public MessageModel(string type, string message, ResultsModel payload)
     {
         Type = type;
