@@ -4,7 +4,7 @@ public class ClientMessageModel : MessageModel
 {
     public string RoomCode { get; set; }
 
-    public RoundEntryModel RoundEntryPayload { get; set; }
+    public RoundEntryModel? RoundEntryPayload { get; set; }
 
     public ClientMessageModel()
     {
