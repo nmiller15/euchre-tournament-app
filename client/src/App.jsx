@@ -1,39 +1,27 @@
-import { useEffect, useState } from "react";
-import Login from "./components/Login";
-import Lobby from "./Lobby";
-import Results from "./Results";
-import Tournament from "./Tournament";
+import { useState } from "react";
 import { roomModel } from "../mock/roomModel";
 import { results } from "../mock/results";
-import useWebSocket from "react-use-websocket";
+import Login from "./components/Login";
+import LoggedIn from "./LoggedIn";
 
 function App() {
-  const WS_URL = "ws://127.0.0.1:8080";
-  const { sendJsonMessage, lastJsonMessage } = useWebSocket(WS_URL, {
-    share: true,
-    queryParams: {
-      username: "user1",
-      createRoom: "true",
-    },
+  const [form, setForm] = useState({
+    username: "",
+    newRoom: false,
+    roomCode: "",
+    submitted: false,
   });
 
-  useEffect(() => {
-    sendJsonMessage({
-      message: "Hello",
-    });
-  }, []);
-
-  useEffect(() => {
-    console.log(lastJsonMessage);
-  }, [lastJsonMessage]);
-
-  return (
+  return !form.submitted ? (
     <div className="flex min-h-screen justify-center">
       <div className="flex w-[360px] justify-center bg-slate-100">
-        {/* <Lobby room={roomModel} /> */}
-        {/* <Login /> */}
-        {/* <Tournament room={roomModel} /> */}
-        <Results room={roomModel} results={results} />
+        <Login form={form} setForm={setForm} />
+      </div>
+    </div>
+  ) : (
+    <div className="flex min-h-screen justify-center">
+      <div className="flex w-[360px] justify-center bg-slate-100">
+        <LoggedIn form={form} />
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import PlayerList from "./components/PlayerList";
 
 function Lobby({ room }) {
-  const { roomCode, players } = room;
+  const { RoomCode, Users } = room;
 
   const handleStart = () => {
     console.log("start");
@@ -10,13 +10,13 @@ function Lobby({ room }) {
   return (
     <div className="">
       <div>
-        <h1 className="text-center text-xl mt-4">Euchre Tournament</h1>
-        <p className="text-sm text-center">Pre-game Lobby</p>
+        <h1 className="mt-4 text-center text-xl">Euchre Tournament</h1>
+        <p className="text-center text-sm">Pre-game Lobby</p>
       </div>
-      <div className="bg-white rounded-lg py-2 border-2 mt-4 w-24 mx-auto">
-        <p className="rounded-md text-2xl text-center">{roomCode}</p>
+      <div className="mx-auto mt-4 w-24 rounded-lg border-2 bg-white py-2">
+        <p className="rounded-md text-center text-2xl">{RoomCode}</p>
       </div>
-      <PlayerList players={players} />
+      <PlayerList users={Users} />
       {/* <button className="mt-4 text-center bg-slate-400 rounded-lg px-2 py-3 mx-auto w-full">
         Waiting for host to start...
       </button> */}
@@ -25,7 +25,7 @@ function Lobby({ room }) {
       </button> */}
       <button
         onClick={handleStart}
-        className="mt-4 text-center text-lg bg-green-500 rounded-lg px-2 py-[0.65rem] mx-auto w-full"
+        className="mx-auto mt-4 w-full rounded-lg bg-green-500 px-2 py-[0.65rem] text-center text-lg"
       >
         Start Tournament
       </button>

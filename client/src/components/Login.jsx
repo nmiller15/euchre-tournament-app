@@ -1,12 +1,6 @@
 import { useState } from "react";
 
-function Login() {
-  const [form, setForm] = useState({
-    username: "",
-    newRoom: false,
-    roomCode: "",
-  });
-
+function Login({ form, setForm }) {
   const [error, setError] = useState({});
 
   const errorFieldStyleString = "border-red-400 border-solid border-2";
@@ -43,18 +37,25 @@ function Login() {
     e.preventDefault();
     const errorsPresent = handleLoginFormErrors();
     if (errorsPresent) return;
+    setForm((prev) => {
+      return {
+        ...prev,
+        submitted: true,
+      };
+    });
   };
+
   return (
     <>
       <form onSubmit={handleSubmit}>
-        <h1 className="text-4xl mt-4">Euchre Tournament</h1>
+        <h1 className="mt-4 text-4xl">Euchre Tournament</h1>
         {error?.id == "username" && (
-          <div className="flex justify-center -mb-4 mt-4">
-            <p className="text-red-400 text-sm text-center">{error.message}</p>
+          <div className="-mb-4 mt-4 flex justify-center">
+            <p className="text-center text-sm text-red-400">{error.message}</p>
           </div>
         )}
         <input
-          className={`block w-full text-center mt-6 h-8 font-semibold rounded-md ${
+          className={`mt-6 block h-8 w-full rounded-md text-center font-semibold ${
             error?.id == "username" && errorFieldStyleString
           }`}
           type="text"
@@ -67,7 +68,7 @@ function Login() {
             })
           }
         />
-        <div className="flex justify-center mt-4">
+        <div className="mt-4 flex justify-center">
           <input
             type="checkbox"
             id="newRoom"
@@ -87,17 +88,17 @@ function Login() {
         ) : (
           <>
             {error?.id == "roomCode" && (
-              <div className="flex justify-center -mb-4 mt-4">
-                <p className="text-red-400 text-xs text-center">
+              <div className="-mb-4 mt-4 flex justify-center">
+                <p className="text-center text-xs text-red-400">
                   {error.message}
                 </p>
               </div>
             )}
-            <div className="flex justify-center mt-4 align-center">
+            <div className="align-center mt-4 flex justify-center">
               <label htmlFor="roomCode">Enter a Room Code:</label>
               <input
                 type="text"
-                className={`w-16 text-center ml-4 rounded-md h-8 font-bold ${
+                className={`ml-4 h-8 w-16 rounded-md text-center font-bold ${
                   error?.id == "roomCode" && errorFieldStyleString
                 }`}
                 id="roomCode"
@@ -118,7 +119,7 @@ function Login() {
         )}
         <div className="flex justify-center">
           <input
-            className="mt-6 text-3xl font-semibold text-center py-2 px-4 bg-slate-500 rounded-md "
+            className="mt-6 rounded-md bg-slate-500 px-4 py-2 text-center text-3xl font-semibold"
             type="submit"
             value={form.newRoom ? "Host Game" : "Join Game"}
           />
