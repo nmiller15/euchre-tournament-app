@@ -30,24 +30,28 @@ function LoggedIn({ form }) {
   };
 
   useEffect(() => {
-    console.log("attempt to set room and user");
+    // Check the message list for Room:Create and User:Create messages
     if (Object.keys(room).length == 0) {
-      console.log("no room");
       messageHistory.forEach((message) => {
         if (message.Type == "Room:Create" || message.Type == "Room:Join") {
           setRoom(message.RoomPayload);
-          console.log("room set");
         }
       });
     }
     if (Object.keys(user).length == 0) {
-      console.log("no user");
+      let found = false;
       messageHistory.forEach((message) => {
         if (message.Type == "User:Create") {
           setUser(message.UserPayload);
-          console.log("user set");
+          found = true;
         }
       });
+      if (!found) {
+        const message = {
+          Type: "User",
+        };
+        sendMessage(JSON.stringify(message));
+      }
     }
   }, [messageHistory]);
 
