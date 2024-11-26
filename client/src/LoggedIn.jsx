@@ -4,6 +4,7 @@ import useWebSocket from "react-use-websocket";
 import Lobby from "./Lobby";
 import Results from "./Results";
 import Tournament from "./Tournament";
+import { handleMessage } from "./components/handleMessage";
 
 const WS_URL = "ws://127.0.0.1:8080";
 
@@ -12,6 +13,7 @@ const WS_URL = "ws://127.0.0.1:8080";
 function LoggedIn({ form }) {
   const [room, setRoom] = useState({});
   const [user, setUser] = useState({});
+  // const [team, setTeam] = useState({});
   const [messageHistory, setMessageHistory] = useState([]);
   const { sendMessage, lastMessage, readyState } = useWebSocket(WS_URL, {
     share: true,
@@ -25,7 +27,8 @@ function LoggedIn({ form }) {
   const processMessage = async () => {
     if (lastMessage) {
       const jsonMessage = await JSON.parse(lastMessage.data);
-      setMessageHistory((prev) => [...prev, jsonMessage]);
+      setMessageHistory((prev) => [jsonMessage, ...prev]);
+      handleMessage(jsonMessage, room, setRoom, user, setUser);
     }
   };
 
@@ -46,6 +49,7 @@ function LoggedIn({ form }) {
           found = true;
         }
       });
+      // If the user isn't found, request the user object response from the server.
       if (!found) {
         const message = {
           Type: "User",
@@ -53,6 +57,7 @@ function LoggedIn({ form }) {
         sendMessage(JSON.stringify(message));
       }
     }
+    // Call the message handler for state updates for all other messages:
   }, [messageHistory]);
 
   useEffect(() => {
@@ -67,7 +72,9 @@ function LoggedIn({ form }) {
       <>
         <div className="flex min-h-screen justify-center">
           <div className="flex w-[360px] justify-center bg-slate-100">
-            {room && <Lobby room={room} user={user} />}
+            {room && room.CurrentRound == 0 && (
+              <Lobby room={room} user={user} send={sendMessage} />
+            )}
             {/* <Tournament room={roomModel} /> */}
             {/* <Results room={roomModel} results={results} /> */}
           </div>

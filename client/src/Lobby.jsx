@@ -1,10 +1,20 @@
 import PlayerList from "./components/PlayerList";
+import Message from "../models/Message";
 
-function Lobby({ room }) {
+function Lobby({ room, user, send }) {
   const { RoomCode, Users } = room;
 
   const handleStart = () => {
-    console.log("start");
+    const message = new Message("Room:Start", room.RoomCode);
+    send(message.JString());
+  };
+
+  const handleReadyUp = () => {
+    const message = new Message(
+      !user.IsReady ? "User:ReadyUp" : "User:Unready",
+      room.RoomCode,
+    );
+    send(message.JString());
   };
 
   return (
@@ -17,17 +27,31 @@ function Lobby({ room }) {
         <p className="rounded-md text-center text-2xl">{RoomCode}</p>
       </div>
       <PlayerList users={Users} />
-      {/* <button className="mt-4 text-center bg-slate-400 rounded-lg px-2 py-3 mx-auto w-full">
-        Waiting for host to start...
-      </button> */}
-      {/* <button className="mt-4 text-center bg-slate-400 rounded-lg px-2 py-3 mx-auto w-full">
-        Waiting for players to ready up...
-      </button> */}
+      {user.IsHost && Object.keys(room.Users).length < 8 ? (
+        <button className="mx-auto mt-4 w-full rounded-lg bg-slate-400 px-2 py-3 text-center">
+          Waiting for players...
+        </button>
+      ) : user.IsHost && room.IsReady ? (
+        <button
+          onClick={handleStart}
+          className="mx-auto mt-4 w-full rounded-lg bg-green-500 px-2 py-[0.65rem] text-center text-lg"
+        >
+          Start Tournament
+        </button>
+      ) : user.IsHost ? (
+        <button className="mx-auto mt-4 w-full rounded-lg bg-slate-400 px-2 py-3 text-center">
+          Waiting for players to ready up...
+        </button>
+      ) : (
+        <button className="mx-auto mt-4 w-full rounded-lg bg-slate-400 px-2 py-3 text-center">
+          Waiting for host to start...
+        </button>
+      )}
       <button
-        onClick={handleStart}
-        className="mx-auto mt-4 w-full rounded-lg bg-green-500 px-2 py-[0.65rem] text-center text-lg"
+        onClick={handleReadyUp}
+        className={`mx-auto mt-4 w-full rounded-lg ${!user.IsReady ? "bg-green-500" : "bg-slate-400"} px-2 py-3 text-center`}
       >
-        Start Tournament
+        {!user.IsReady ? "Ready Up" : "Unready"}
       </button>
     </div>
   );
