@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { tableContainsPlayer } from "./util/tableContainsPlayer";
+import { getPartner } from "./util/getPartner";
 
 function Tournament({ room, user, send }) {
   // All tournament data is from the room object
@@ -10,6 +11,9 @@ function Tournament({ room, user, send }) {
   );
   const [currentScore, setCurrentScore] = useState(0);
   const [currentLoners, setCurrentLoners] = useState(0);
+  const [currentPartner, setCurrentPartner] = useState(
+    getPartner(displayRound, user.Guid),
+  );
 
   // Round changer interface logic
   const handleSeePrevRound = () => {
@@ -39,6 +43,12 @@ function Tournament({ room, user, send }) {
     if (!result) return;
     console.log("Submitted");
   };
+
+  useEffect(() => {
+    if (displayRound) {
+      setCurrentPartner(getPartner(displayRound, user.Guid));
+    }
+  }, [displayRound]);
 
   return (
     <div className="block w-[360px]">
@@ -82,7 +92,7 @@ function Tournament({ room, user, send }) {
       </div>
       <div className="mt-6 text-center">
         <p className="text-xs">You&apos;re playing with</p>
-        <p>[Partner]</p>
+        <p>{currentPartner?.Username}</p>
       </div>
       <div className="mt-6">
         <form onSubmit={handleSubmit}>

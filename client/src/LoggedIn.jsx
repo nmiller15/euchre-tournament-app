@@ -72,11 +72,14 @@ function LoggedIn({ form }) {
       <>
         <div className="flex min-h-screen justify-center">
           <div className="flex w-[360px] justify-center bg-slate-100">
-            {room && room.CurrentRound == 0 && (
+            {room && room.CurrentRound == 0 ? (
               <Lobby room={room} user={user} send={sendMessage} />
+            ) : room && room.CurrentRound > 0 ? (
+              <Tournament room={room} user={user} send={sendMessage} />
+            ) : (
+              <></>
+              // <Results room={room} user={user} send={sendMessage} />
             )}
-            {/* <Tournament room={roomModel} /> */}
-            {/* <Results room={roomModel} results={results} /> */}
           </div>
         </div>
       </>

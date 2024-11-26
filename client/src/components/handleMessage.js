@@ -15,6 +15,10 @@ export const handleMessage = (message, room, setRoom, user, setUser) => {
       setUser(message.RoomPayload.Users[user.Guid]);
       break;
     }
+    case "Room:Schedule": {
+      setRoom(message.RoomPayload);
+      break;
+    }
     default: {
       break;
     }
