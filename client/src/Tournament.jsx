@@ -1,30 +1,31 @@
 import { useState } from "react";
+import { tableContainsPlayer } from "./util/tableContainsPlayer";
 
-function Tournament({ room }) {
+function Tournament({ room, user, send }) {
   // All tournament data is from the room object
-  const { schedule, currentRound } = room;
+  const { Schedule, CurrentRound } = room;
   // State of the data on the screen is determined by which round is in state.
   const [displayRound, setDisplayRound] = useState(
-    schedule.find((round) => round.roundNumber == currentRound),
+    Schedule.find((round) => round.RoundNumber == CurrentRound),
   );
   const [currentScore, setCurrentScore] = useState(0);
   const [currentLoners, setCurrentLoners] = useState(0);
 
   // Round changer interface logic
   const handleSeePrevRound = () => {
-    const roundNumber = displayRound.roundNumber;
+    const roundNumber = displayRound.RoundNumber;
     if (roundNumber == 1) return;
-    const prevRoundObj = schedule.find(
-      (round) => round.roundNumber == roundNumber - 1,
+    const prevRoundObj = Schedule.find(
+      (round) => round.RoundNumber == roundNumber - 1,
     );
     setDisplayRound(prevRoundObj);
   };
 
   const handleSeeNextRound = () => {
-    const roundNumber = displayRound.roundNumber;
-    if (roundNumber == schedule.length) return;
-    const nextRoundObj = schedule.find(
-      (round) => round.roundNumber == roundNumber + 1,
+    const roundNumber = displayRound.RoundNumber;
+    if (roundNumber == Schedule.length) return;
+    const nextRoundObj = Schedule.find(
+      (round) => round.RoundNumber == roundNumber + 1,
     );
     setDisplayRound(nextRoundObj);
   };
@@ -55,7 +56,7 @@ function Tournament({ room }) {
         <div className="block">
           <p className="text-center text-xs">Round</p>
           <p className="text-center text-4xl tabular-nums">
-            {displayRound.roundNumber}
+            {displayRound.RoundNumber}
           </p>
         </div>
         <i
@@ -65,14 +66,14 @@ function Tournament({ room }) {
       </div>
       {/* Tables */}
       <div className="mt-6 flex justify-center gap-4">
-        {displayRound.roundTables.map((table) => {
+        {displayRound.RoundTables.map((table) => {
           return (
             <div
-              className="flex h-8 w-8 flex-col justify-center rounded-full bg-white"
-              key={`table${table.tableNumber}`}
+              className={`flex h-8 w-8 flex-col justify-center rounded-full ${tableContainsPlayer(table, user.Guid) ? "bg-black text-white" : "bg-white"}`}
+              key={`table${table.Number}`}
             >
               <p className="mt-[2px] h-8 w-8 text-center text-lg">
-                {table.tableNumber}
+                {table.Number}
               </p>
             </div>
           );
@@ -160,7 +161,7 @@ function Tournament({ room }) {
       </div>
       <div className="mt-6 flex justify-around">
         <div className="text-center">
-          <p className="text-3xl font-bold">{schedule.length - currentRound}</p>
+          <p className="text-3xl font-bold">{Schedule.length - CurrentRound}</p>
           <p className="text-xs">Rounds Left</p>
         </div>
         <div className="text-center">
