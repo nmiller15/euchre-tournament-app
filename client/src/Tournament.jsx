@@ -124,10 +124,12 @@ function Tournament({ room, user, send }) {
     // );
   }, [displayRound]);
 
-  // useEffect(() => {
-  //   const updatedRound = Schedule.find((round) => round.RoundNumber == CurrentRound);
-  //   setDisplayRound(updatedRound)
-  // }, [room])
+  useEffect(() => {
+    const updatedRound = Schedule.find(
+      (round) => round.RoundNumber == CurrentRound,
+    );
+    setDisplayRound(updatedRound);
+  }, [room]);
 
   return (
     <div className="block w-[360px]">
