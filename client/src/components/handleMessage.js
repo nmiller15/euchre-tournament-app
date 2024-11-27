@@ -21,6 +21,12 @@ export const handleMessage = (message, room, setRoom, user, setUser) => {
     }
     case "Room:UpdatePoints": {
       setRoom(message.RoomPayload);
+      setUser(message.RoomPayload.Users[user.Guid]);
+      break;
+    }
+    case "Room:UpdateUserLoners": {
+      setRoom(message.RoomPayload);
+      setUser(message.RoomPayload.Users[user.Guid]);
       break;
     }
     default: {

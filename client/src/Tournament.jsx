@@ -242,9 +242,9 @@ function Tournament({ room, user, send }) {
                 className="h-8 w-8 border-2 border-slate-600 bg-white text-xl font-bold"
                 onClick={() => {
                   setRoundEntry((prev) => {
-                    const newTeam = { ...prev, Score: prev.Score + 1 };
-                    updateScore(newTeam);
-                    return newTeam;
+                    const newEntry = { ...prev, Loners: prev.Loners + 1 };
+                    updateLoners(newEntry);
+                    return newEntry;
                   });
                 }}
               >
