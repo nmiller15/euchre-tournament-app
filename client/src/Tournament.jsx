@@ -12,16 +12,6 @@ function Tournament({ room, user, send }) {
   const [displayRound, setDisplayRound] = useState(
     Schedule.find((round) => round.RoundNumber == CurrentRound),
   );
-  // const [currentScore, setCurrentScore] = useState(
-  //   user.RoundEntries[displayRound.CurrentRound - 1]
-  //     ? user.RoundEntries[displayRound.CurrentRound - 1].Score
-  //     : 0,
-  // );
-  // const [currentLoners, setCurrentLoners] = useState(
-  //   user.RoundEntries[displayRound.CurrentRound - 1]
-  //     ? user.RoundEntries[displayRound.CurrentRound - 1].Loners
-  //     : 0,
-  // );
   const [roundEntry, setRoundEntry] = useState(
     user.RoundEntries[displayRound.RoundNumber - 1]
       ? user.RoundEntries[displayRound.RoundNumber - 1]
@@ -112,16 +102,6 @@ function Tournament({ room, user, send }) {
     setCurrentTeam(team);
     setCurrentPartner(partner);
     setRoundEntry(entry);
-    // setCurrentScore(
-    //   user.RoundEntries[displayRound.CurrentRound - 1]
-    //     ? user.RoundEntries[displayRound.CurrentRound - 1].Score
-    //     : 0,
-    // );
-    // setCurrentScore(
-    //   user.RoundEntries[displayRound.CurrentRound - 1]
-    //     ? user.RoundEntries[displayRound.CurrentRound - 1].Loners
-    //     : 0,
-    // );
   }, [displayRound]);
 
   useEffect(() => {
