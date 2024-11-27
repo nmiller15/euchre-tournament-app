@@ -4,11 +4,15 @@ import { getPartner } from "./util/getPartner";
 import { getTeam } from "./util/getTeam";
 import Message from "../models/Message";
 
+//TODO: Divide this "component" into sub-components. File is too large.
+
 function Tournament({ room, user, send }) {
   // All tournament data is from the room object
+  // ===========================================
   const { Schedule, CurrentRound } = room;
 
   // State of the data on the screen is determined by which round is in state.
+  // =========================================================================
   const [displayRound, setDisplayRound] = useState(
     Schedule.find((round) => round.RoundNumber == CurrentRound),
   );
@@ -25,6 +29,7 @@ function Tournament({ room, user, send }) {
   );
 
   // Round changer interface logic
+  // =============================
   const handleSeePrevRound = () => {
     const roundNumber = displayRound.RoundNumber;
     if (roundNumber == 1) return;
@@ -61,6 +66,7 @@ function Tournament({ room, user, send }) {
   //##########################################
 
   // Score Update Logic
+  // ==================
   const updateScore = (updatedTeam) => {
     const message = new Message(
       "Team:UpdatePoints",
@@ -80,6 +86,7 @@ function Tournament({ room, user, send }) {
     );
     send(message.JString());
   };
+  // ##########################################
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -136,6 +143,7 @@ function Tournament({ room, user, send }) {
         ></i>
       </div>
       {/* Tables */}
+      {/* ====== */}
       <div className="mt-6 flex justify-center gap-4">
         {displayRound.RoundTables.map((table) => {
           return (
