@@ -19,6 +19,10 @@ export const handleMessage = (message, room, setRoom, user, setUser) => {
       setRoom(message.RoomPayload);
       break;
     }
+    case "Room:UpdatePoints": {
+      setRoom(message.RoomPayload);
+      break;
+    }
     default: {
       break;
     }

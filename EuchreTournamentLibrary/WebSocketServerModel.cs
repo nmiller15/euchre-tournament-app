@@ -131,7 +131,7 @@ public class WebSocketServerModel
         
         AddConnection(guid, connection);
         AddUser(guid, user);
-        
+        Console.WriteLine($"User {user.Username} has joined.");
         user.SendMessageToUser(new MessageModel(
             "User:Create",
             $"Your user has been created with username {user.Username}.",
@@ -212,7 +212,7 @@ public class WebSocketServerModel
                     break;
                 }
                 // Validate that a payload of the correct name has been sent.
-                if (message.TeamPayload == null)
+                if (message.TeamPayload == null || message.TeamPayload.Guid == null)
                 {
                     user.SendMessageToUser(new MessageModel("Error", "Must include a TeamPayload object with this message type."));
                     break;
@@ -227,7 +227,7 @@ public class WebSocketServerModel
                 var team = room.Teams[message.TeamPayload.Guid];
 
                 team.UpdateScore(message.TeamPayload.Score);
-                team.BroadcastToTeam(new MessageModel("Team:UpdatePoints", $"Your team score has changed to {team.Score}.", team));
+                team.BroadcastToTeam(new MessageModel("Room:UpdatePoints", $"Your team score has changed to {team.Score}.", room));
                 break;
             case "RoundEntry:UpdateUserLoners":
                 // Protect against updating during an invalid round

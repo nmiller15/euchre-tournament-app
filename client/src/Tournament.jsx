@@ -1,18 +1,37 @@
 import { useState, useEffect } from "react";
 import { tableContainsPlayer } from "./util/tableContainsPlayer";
 import { getPartner } from "./util/getPartner";
+import { getTeam } from "./util/getTeam";
+import Message from "../models/Message";
 
 function Tournament({ room, user, send }) {
   // All tournament data is from the room object
   const { Schedule, CurrentRound } = room;
+
   // State of the data on the screen is determined by which round is in state.
   const [displayRound, setDisplayRound] = useState(
     Schedule.find((round) => round.RoundNumber == CurrentRound),
   );
-  const [currentScore, setCurrentScore] = useState(0);
-  const [currentLoners, setCurrentLoners] = useState(0);
+  // const [currentScore, setCurrentScore] = useState(
+  //   user.RoundEntries[displayRound.CurrentRound - 1]
+  //     ? user.RoundEntries[displayRound.CurrentRound - 1].Score
+  //     : 0,
+  // );
+  // const [currentLoners, setCurrentLoners] = useState(
+  //   user.RoundEntries[displayRound.CurrentRound - 1]
+  //     ? user.RoundEntries[displayRound.CurrentRound - 1].Loners
+  //     : 0,
+  // );
+  const [roundEntry, setRoundEntry] = useState(
+    user.RoundEntries[displayRound.RoundNumber - 1]
+      ? user.RoundEntries[displayRound.RoundNumber - 1]
+      : { Loners: 0 },
+  );
+  const [currentTeam, setCurrentTeam] = useState(
+    getTeam(displayRound, user.Guid),
+  );
   const [currentPartner, setCurrentPartner] = useState(
-    getPartner(displayRound, user.Guid),
+    getPartner(currentTeam, user.Guid),
   );
 
   // Round changer interface logic
@@ -23,6 +42,14 @@ function Tournament({ room, user, send }) {
       (round) => round.RoundNumber == roundNumber - 1,
     );
     setDisplayRound(prevRoundObj);
+    const team = getTeam(prevRoundObj, user.Guid);
+    const partner = getPartner(team, user.Guid);
+    const entry = user.RoundEntries[prevRoundObj.RoundNumber - 1]
+      ? user.RoundEntries[prevRoundObj.RoundNumber - 1]
+      : { Loners: 0 };
+    setCurrentTeam(team);
+    setCurrentPartner(partner);
+    setRoundEntry(entry);
   };
 
   const handleSeeNextRound = () => {
@@ -32,23 +59,75 @@ function Tournament({ room, user, send }) {
       (round) => round.RoundNumber == roundNumber + 1,
     );
     setDisplayRound(nextRoundObj);
+    const team = getTeam(nextRoundObj, user.Guid);
+    const partner = getPartner(team, user.Guid);
+    const entry = user.RoundEntries[nextRoundObj.RoundNumber - 1]
+      ? user.RoundEntries[nextRoundObj.RoundNumber - 1]
+      : { Loners: 0 };
+    setCurrentTeam(team);
+    setCurrentPartner(partner);
+    setRoundEntry(entry);
   };
   //##########################################
+
+  // Score Update Logic
+  const updateScore = (updatedTeam) => {
+    const message = new Message(
+      "Team:UpdatePoints",
+      room.RoomCode,
+      updatedTeam,
+      "TeamPayload",
+    );
+    send(message.JString());
+  };
+
+  const updateLoners = (updatedRoundEntry) => {
+    const message = new Message(
+      "RoundEntry:UpdateUserLoners",
+      room.RoomCode,
+      updatedRoundEntry,
+      "RoundEntryPayload",
+    );
+    send(message.JString());
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const result = confirm(
-      `Click "OK" to submit your score of ${currentScore} point(s) ${currentLoners} loner(s).`,
+      `Click "OK" to submit your score of ${currentTeam.Score} point(s) ${roundEntry.Loners} loner(s).`,
     );
     if (!result) return;
     console.log("Submitted");
   };
 
   useEffect(() => {
-    if (displayRound) {
-      setCurrentPartner(getPartner(displayRound, user.Guid));
+    if (!displayRound) {
+      return;
     }
+    const team = getTeam(displayRound, user.Guid);
+    const partner = getPartner(currentTeam, user.Guid);
+    const entry = user.RoundEntries[displayRound.RoundNumber - 1]
+      ? user.RoundEntries[displayRound.RoundNumber - 1]
+      : { Loners: 0 };
+    setCurrentTeam(team);
+    setCurrentPartner(partner);
+    setRoundEntry(entry);
+    // setCurrentScore(
+    //   user.RoundEntries[displayRound.CurrentRound - 1]
+    //     ? user.RoundEntries[displayRound.CurrentRound - 1].Score
+    //     : 0,
+    // );
+    // setCurrentScore(
+    //   user.RoundEntries[displayRound.CurrentRound - 1]
+    //     ? user.RoundEntries[displayRound.CurrentRound - 1].Loners
+    //     : 0,
+    // );
   }, [displayRound]);
+
+  // useEffect(() => {
+  //   const updatedRound = Schedule.find((round) => round.RoundNumber == CurrentRound);
+  //   setDisplayRound(updatedRound)
+  // }, [room])
 
   return (
     <div className="block w-[360px]">
@@ -101,17 +180,23 @@ function Tournament({ room, user, send }) {
             <div>
               <input
                 type="text"
-                value={currentScore}
+                value={currentTeam.Score}
                 className="mr-8 h-10 w-10 rounded-md border-2 border-slate-600 text-center text-lg font-semibold"
-                onChange={(e) => setCurrentScore(e.target.value)}
+                onChange={(e) => {
+                  setCurrentTeam((prev) => {
+                    return { ...prev, Score: e.target.value };
+                  });
+                }}
               />
               <button
                 type="button"
                 className="mr-2 h-8 w-8 border-2 border-slate-600 bg-white text-xl font-bold"
                 onClick={() => {
-                  setCurrentScore((prev) => {
-                    if (prev == 0) return prev;
-                    return prev - 1;
+                  setCurrentTeam((prev) => {
+                    if (prev.Score == 0) return prev;
+                    const newTeam = { ...prev, Score: prev.Score - 1 };
+                    updateScore(newTeam);
+                    return newTeam;
                   });
                 }}
               >
@@ -121,7 +206,11 @@ function Tournament({ room, user, send }) {
                 type="button"
                 className="h-8 w-8 border-2 border-slate-600 bg-white text-xl font-bold"
                 onClick={() => {
-                  setCurrentScore((prev) => prev + 1);
+                  setCurrentTeam((prev) => {
+                    const newTeam = { ...prev, Score: prev.Score + 1 };
+                    updateScore(newTeam);
+                    return newTeam;
+                  });
                 }}
               >
                 +
@@ -133,17 +222,26 @@ function Tournament({ room, user, send }) {
             <div>
               <input
                 type="text"
-                value={currentLoners}
+                value={roundEntry.Loners}
                 className="mr-8 h-10 w-10 rounded-md border-2 border-slate-600 text-center text-lg font-semibold"
-                onChange={(e) => setCurrentLoners(e.target.value)}
+                onChange={(e) => {
+                  setRoundEntry((prev) => {
+                    return {
+                      ...prev,
+                      Loners: e.target.value,
+                    };
+                  });
+                }}
               />
               <button
                 type="button"
                 className="mr-2 h-8 w-8 border-2 border-slate-600 bg-white text-xl font-bold"
                 onClick={() => {
-                  setCurrentLoners((prev) => {
+                  setRoundEntry((prev) => {
                     if (prev == 0) return prev;
-                    return prev - 1;
+                    const newEntry = { ...prev, Loners: prev.Loners - 1 };
+                    updateLoners(newEntry);
+                    return newEntry;
                   });
                 }}
               >
@@ -153,7 +251,11 @@ function Tournament({ room, user, send }) {
                 type="button"
                 className="h-8 w-8 border-2 border-slate-600 bg-white text-xl font-bold"
                 onClick={() => {
-                  setCurrentLoners((prev) => prev + 1);
+                  setRoundEntry((prev) => {
+                    const newTeam = { ...prev, Score: prev.Score + 1 };
+                    updateScore(newTeam);
+                    return newTeam;
+                  });
                 }}
               >
                 +

@@ -1,13 +1,21 @@
 export default class Message {
   Type = "";
   RoomCode = "";
-  Payload = {};
+  TeamPayload = {};
+  RoundEntryPayload = {};
 
-  constructor(type, roomCode, payload) {
+  constructor(type, roomCode, payload, payloadType) {
     this.Type = type;
     this.RoomCode = roomCode;
-    if (payload) {
-      this.Payload = payload;
+    switch (payloadType) {
+      case "TeamPayload": {
+        this.TeamPayload = payload;
+        break;
+      }
+      case "RoundEntryPayload": {
+        this.RoundEntryPayload = payload;
+        break;
+      }
     }
   }
 
