@@ -244,7 +244,7 @@ public class WebSocketServerModel
                 }
                 // Access the canonical RoundEntry for the user.
                 var updatedEntry = user.UpdateRoundEntry(room.CurrentRound, message.RoundEntryPayload.Score, message.RoundEntryPayload.Loners);
-                user.SendMessageToUser(new MessageModel("RoundEntry:UpdateUserLoners", $"User {user.Username} has {updatedEntry.Loners} loners.", updatedEntry));
+                user.SendMessageToUser(new MessageModel("RoundEntry:UpdateUserLoners", $"User {user.Username} has {updatedEntry.Loners} loners.", room));
                 break;
             case "Round:SubmitEntry":
                 //TODO: Testing for this message handler
@@ -258,13 +258,13 @@ public class WebSocketServerModel
                 var entryToSubmit = user.RoundEntries.FirstOrDefault(entry => entry.RoundNumber == room.CurrentRound);
                 if (entryToSubmit == null)
                 {
-                    user.CreateEmptyRoundEntry(room.CurrentRound);
-                    break;
+                    entryToSubmit = user.CreateEmptyRoundEntry(room.CurrentRound);
                 }
                 var round = room.Schedule.FirstOrDefault(round => round.RoundNumber == room.CurrentRound);
                 if (round == null)
                 {
                     user.SendMessageToUser(new MessageModel("Error", "The round could not be found."));
+                    break;
                 }
                 // Add the RoundEntry to the currentRound
                 round.SubmitRoundEntry(entryToSubmit);
@@ -285,7 +285,7 @@ public class WebSocketServerModel
                 }
                 else
                 {
-                    room.BroadcastToRoom(new MessageModel("Round:SubmitEntry", $"User {user.Username} has submitted a score.", round));
+                    room.BroadcastToRoom(new MessageModel("Round:SubmitEntry", $"User {user.Username} has submitted a score.", room)); 
                 }
                 break;
             case "Room:ShareResults":
