@@ -16,17 +16,27 @@ function Tournament({ room, user, send }) {
   const [displayRound, setDisplayRound] = useState(
     Schedule.find((round) => round.RoundNumber == CurrentRound),
   );
-  const [roundEntry, setRoundEntry] = useState(
-    user.RoundEntries[displayRound.RoundNumber - 1]
+  const [sittingOut, setSittingOut] = useState(() => {
+    if (!Schedule[CurrentRound].PlayersSittingOut) return false;
+    return Schedule[CurrentRound].PlayersSittingOut.some(
+      (player) => player.Guid == user.Guid,
+    );
+  });
+  const [roundEntry, setRoundEntry] = useState(() => {
+    if (sittingOut) return { Loners: 0 };
+    return user.RoundEntries[displayRound.RoundNumber - 1]
       ? user.RoundEntries[displayRound.RoundNumber - 1]
-      : { Loners: 0 },
-  );
-  const [currentTeam, setCurrentTeam] = useState(
-    getTeam(displayRound, user.Guid),
-  );
-  const [currentPartner, setCurrentPartner] = useState(
-    getPartner(currentTeam, user.Guid),
-  );
+      : { Loners: 0 };
+  });
+  const [entrySubmitted, setEntrySubmitted] = useState(false);
+  const [currentTeam, setCurrentTeam] = useState(() => {
+    if (sittingOut) return { Score: 0 };
+    return getTeam(displayRound, user.Guid);
+  });
+  const [currentPartner, setCurrentPartner] = useState(() => {
+    if (sittingOut) return null;
+    return getPartner(currentTeam, user.Guid);
+  });
 
   // Round changer interface logic
   // =============================
@@ -37,14 +47,26 @@ function Tournament({ room, user, send }) {
       (round) => round.RoundNumber == roundNumber - 1,
     );
     setDisplayRound(prevRoundObj);
-    const team = getTeam(prevRoundObj, user.Guid);
-    const partner = getPartner(team, user.Guid);
-    const entry = user.RoundEntries[prevRoundObj.RoundNumber - 1]
-      ? user.RoundEntries[prevRoundObj.RoundNumber - 1]
-      : { Loners: 0 };
-    setCurrentTeam(team);
-    setCurrentPartner(partner);
-    setRoundEntry(entry);
+    setSittingOut(() => {
+      const isSittingOut = prevRoundObj.PlayersSittingOut.some(
+        (player) => player.Guid == user.Guid,
+      );
+      if (isSittingOut) {
+        setCurrentTeam({ Score: 0 });
+        setCurrentPartner(null);
+        setRoundEntry({ Loners: 0 });
+      } else {
+        const team = getTeam(prevRoundObj, user.Guid);
+        const partner = getPartner(team, user.Guid);
+        const entry = user.RoundEntries[prevRoundObj.RoundNumber - 1]
+          ? user.RoundEntries[prevRoundObj.RoundNumber - 1]
+          : { Loners: 0 };
+        setCurrentTeam(team);
+        setCurrentPartner(partner);
+        setRoundEntry(entry);
+      }
+      return isSittingOut;
+    });
   };
 
   const handleSeeNextRound = () => {
@@ -54,14 +76,26 @@ function Tournament({ room, user, send }) {
       (round) => round.RoundNumber == roundNumber + 1,
     );
     setDisplayRound(nextRoundObj);
-    const team = getTeam(nextRoundObj, user.Guid);
-    const partner = getPartner(team, user.Guid);
-    const entry = user.RoundEntries[nextRoundObj.RoundNumber - 1]
-      ? user.RoundEntries[nextRoundObj.RoundNumber - 1]
-      : { Loners: 0 };
-    setCurrentTeam(team);
-    setCurrentPartner(partner);
-    setRoundEntry(entry);
+    setSittingOut(() => {
+      const isSittingOut = nextRoundObj.PlayersSittingOut.some(
+        (player) => player.Guid == user.Guid,
+      );
+      if (isSittingOut) {
+        setCurrentTeam({ Score: 0 });
+        setCurrentPartner(null);
+        setRoundEntry({ Loners: 0 });
+      } else {
+        const team = getTeam(nextRoundObj, user.Guid);
+        const partner = getPartner(team, user.Guid);
+        const entry = user.RoundEntries[nextRoundObj.RoundNumber - 1]
+          ? user.RoundEntries[nextRoundObj.RoundNumber - 1]
+          : { Loners: 0 };
+        setCurrentTeam(team);
+        setCurrentPartner(partner);
+        setRoundEntry(entry);
+      }
+      return isSittingOut;
+    });
   };
   //##########################################
 
@@ -90,15 +124,22 @@ function Tournament({ room, user, send }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (sittingOut) return;
     const result = confirm(
       `Click "OK" to submit your score of ${currentTeam.Score} point(s) ${roundEntry.Loners} loner(s).`,
     );
     if (!result) return;
     console.log("Submitted");
+    const message = new Message("Round:SubmitEntry", room.RoomCode);
+    send(message.JString());
+    setEntrySubmitted(true);
   };
 
   useEffect(() => {
     if (!displayRound) {
+      return;
+    }
+    if (sittingOut) {
       return;
     }
     const team = getTeam(displayRound, user.Guid);
@@ -109,6 +150,17 @@ function Tournament({ room, user, send }) {
     setCurrentTeam(team);
     setCurrentPartner(partner);
     setRoundEntry(entry);
+    setEntrySubmitted(() => {
+      console.log("here");
+      console.log(displayRound);
+      const foundSubmittedEntry = displayRound.RoundScoreEntries.some(
+        (entry) => {
+          return entry.ReportingPlayerGuid == user.Guid;
+        },
+      );
+      console.log(foundSubmittedEntry);
+      return foundSubmittedEntry;
+    });
   }, [displayRound]);
 
   useEffect(() => {
@@ -116,6 +168,16 @@ function Tournament({ room, user, send }) {
       (round) => round.RoundNumber == CurrentRound,
     );
     setDisplayRound(updatedRound);
+    // setEntrySubmitted(() => {
+    // //   const foundSubmittedEntry = updatedRound.RoundScoreEntries.some(
+    // //     (entry) => {
+
+    // //       entry.ReportingPlayerGuid == user.Guid;
+    // //     },
+    // //   );
+    // //   return foundSubmittedEntry;
+    // // });
+    // return true;
   }, [room]);
 
   return (
@@ -145,122 +207,144 @@ function Tournament({ room, user, send }) {
       {/* Tables */}
       {/* ====== */}
       <div className="mt-6 flex justify-center gap-4">
-        {displayRound.RoundTables.map((table) => {
-          return (
-            <div
-              className={`flex h-8 w-8 flex-col justify-center rounded-full ${tableContainsPlayer(table, user.Guid) ? "bg-black text-white" : "bg-white"}`}
-              key={`table${table.Number}`}
-            >
-              <p className="mt-[2px] h-8 w-8 text-center text-lg">
-                {table.Number}
-              </p>
-            </div>
-          );
-        })}
-        {/* ######################## */}
+        {sittingOut ? (
+          <p className="mb-28">You&apos;re sitting out this round!</p>
+        ) : (
+          displayRound.RoundTables.map((table) => {
+            return (
+              <div
+                className={`flex h-8 w-8 flex-col justify-center rounded-full ${tableContainsPlayer(table, user.Guid) ? "bg-black text-white" : "bg-white"}`}
+                key={`table${table.Number}`}
+              >
+                <p className="mt-[2px] h-8 w-8 text-center text-lg">
+                  {table.Number}
+                </p>
+              </div>
+            );
+          })
+        )}
       </div>
-      <div className="mt-6 text-center">
-        <p className="text-xs">You&apos;re playing with</p>
-        <p>{currentPartner?.Username}</p>
-      </div>
-      <div className="mt-6">
-        <form onSubmit={handleSubmit}>
-          <div className="mx-auto flex h-12 w-3/4 justify-start align-middle">
-            <p className="w-[120px] text-xl font-semibold">Points</p>
-            <div>
-              <input
-                type="text"
-                value={currentTeam.Score}
-                className="mr-8 h-10 w-10 rounded-md border-2 border-slate-600 text-center text-lg font-semibold"
-                onChange={(e) => {
-                  setCurrentTeam((prev) => {
-                    return { ...prev, Score: e.target.value };
-                  });
-                }}
-              />
-              <button
-                type="button"
-                className="mr-2 h-8 w-8 border-2 border-slate-600 bg-white text-xl font-bold"
-                onClick={() => {
-                  setCurrentTeam((prev) => {
-                    if (prev.Score == 0) return prev;
-                    const newTeam = { ...prev, Score: prev.Score - 1 };
-                    updateScore(newTeam);
-                    return newTeam;
-                  });
-                }}
-              >
-                -
-              </button>
-              <button
-                type="button"
-                className="h-8 w-8 border-2 border-slate-600 bg-white text-xl font-bold"
-                onClick={() => {
-                  setCurrentTeam((prev) => {
-                    const newTeam = { ...prev, Score: prev.Score + 1 };
-                    updateScore(newTeam);
-                    return newTeam;
-                  });
-                }}
-              >
-                +
-              </button>
-            </div>
+
+      {/* ######################## */}
+      {!sittingOut && (
+        <>
+          <div className="mt-6 text-center">
+            <p className="text-xs">You&apos;re playing with</p>
+            <p>{currentPartner?.Username}</p>
           </div>
-          <div className="mx-auto flex h-12 w-3/4 justify-start align-middle">
-            <p className="w-[120px] text-xl font-semibold">Loners</p>
-            <div>
-              <input
-                type="text"
-                value={roundEntry.Loners}
-                className="mr-8 h-10 w-10 rounded-md border-2 border-slate-600 text-center text-lg font-semibold"
-                onChange={(e) => {
-                  setRoundEntry((prev) => {
-                    return {
-                      ...prev,
-                      Loners: e.target.value,
-                    };
-                  });
-                }}
-              />
-              <button
-                type="button"
-                className="mr-2 h-8 w-8 border-2 border-slate-600 bg-white text-xl font-bold"
-                onClick={() => {
-                  setRoundEntry((prev) => {
-                    if (prev == 0) return prev;
-                    const newEntry = { ...prev, Loners: prev.Loners - 1 };
-                    updateLoners(newEntry);
-                    return newEntry;
-                  });
-                }}
-              >
-                -
-              </button>
-              <button
-                type="button"
-                className="h-8 w-8 border-2 border-slate-600 bg-white text-xl font-bold"
-                onClick={() => {
-                  setRoundEntry((prev) => {
-                    const newEntry = { ...prev, Loners: prev.Loners + 1 };
-                    updateLoners(newEntry);
-                    return newEntry;
-                  });
-                }}
-              >
-                +
-              </button>
-            </div>
+          <div className="mt-6">
+            <form onSubmit={handleSubmit}>
+              <div className="mx-auto flex h-12 w-3/4 justify-start align-middle">
+                <p className="w-[120px] text-xl font-semibold">Points</p>
+                <div>
+                  <input
+                    type="text"
+                    value={currentTeam?.Score}
+                    className="mr-8 h-10 w-10 rounded-md border-2 border-slate-600 text-center text-lg font-semibold"
+                    onChange={(e) => {
+                      if (sittingOut) return;
+                      console.log("executing at input");
+                      setCurrentTeam((prev) => {
+                        return { ...prev, Score: e.target.value };
+                      });
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="mr-2 h-8 w-8 border-2 border-slate-600 bg-white text-xl font-bold"
+                    onClick={() => {
+                      if (sittingOut) return;
+                      console.log("executing");
+                      setCurrentTeam((prev) => {
+                        if (prev.Score == 0) return prev;
+                        const newTeam = { ...prev, Score: prev.Score - 1 };
+                        updateScore(newTeam);
+                        return newTeam;
+                      });
+                    }}
+                  >
+                    -
+                  </button>
+                  <button
+                    type="button"
+                    className="h-8 w-8 border-2 border-slate-600 bg-white text-xl font-bold"
+                    onClick={() => {
+                      if (sittingOut) return;
+                      console.log("executing");
+                      setCurrentTeam((prev) => {
+                        const newTeam = { ...prev, Score: prev.Score + 1 };
+                        updateScore(newTeam);
+                        return newTeam;
+                      });
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              <div className="mx-auto flex h-12 w-3/4 justify-start align-middle">
+                <p className="w-[120px] text-xl font-semibold">Loners</p>
+                <div>
+                  <input
+                    type="text"
+                    value={roundEntry?.Loners}
+                    className="mr-8 h-10 w-10 rounded-md border-2 border-slate-600 text-center text-lg font-semibold"
+                    onChange={(e) => {
+                      if (sittingOut) return;
+                      console.log("executing at input");
+                      setRoundEntry((prev) => {
+                        return {
+                          ...prev,
+                          Loners: e.target.value,
+                        };
+                      });
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="mr-2 h-8 w-8 border-2 border-slate-600 bg-white text-xl font-bold"
+                    onClick={() => {
+                      if (sittingOut) return;
+                      console.log("executing");
+                      setRoundEntry((prev) => {
+                        if (prev == 0) return prev;
+                        const newEntry = { ...prev, Loners: prev.Loners - 1 };
+                        updateLoners(newEntry);
+                        return newEntry;
+                      });
+                    }}
+                  >
+                    -
+                  </button>
+                  <button
+                    type="button"
+                    className="h-8 w-8 border-2 border-slate-600 bg-white text-xl font-bold"
+                    onClick={() => {
+                      if (sittingOut) return;
+                      console.log("executing");
+                      setRoundEntry((prev) => {
+                        const newEntry = { ...prev, Loners: prev.Loners + 1 };
+                        updateLoners(newEntry);
+                        return newEntry;
+                      });
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              <div className="flex w-full justify-center">
+                <input
+                  value="Submit Score"
+                  type="submit"
+                  disabled={entrySubmitted}
+                  className={`mx-auto mt-6 rounded-md border-2 border-slate-600 p-2 hover:cursor-pointer ${!entrySubmitted ? "bg-white" : "bg-slate-300 text-slate-400"}`}
+                />
+              </div>
+            </form>
           </div>
-          <div className="flex w-full justify-center">
-            <input
-              value="Submit Score"
-              type="submit"
-              className="mx-auto mt-6 rounded-md border-2 border-slate-600 bg-white p-2"
-            />
-          </div>
-        </form>
-      </div>
+        </>
+      )}
       <div className="mt-6 flex justify-around">
         <div className="text-center">
           <p className="text-3xl font-bold">{Schedule.length - CurrentRound}</p>

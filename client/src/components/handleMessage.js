@@ -29,6 +29,16 @@ export const handleMessage = (message, room, setRoom, user, setUser) => {
       setUser(message.RoomPayload.Users[user.Guid]);
       break;
     }
+    case "Round:SubmitEntry": {
+      setRoom(message.RoomPayload);
+      setUser(message.RoomPayload.Users[user.Guid]);
+      break;
+    }
+    case "Room:NewRound": {
+      setRoom(message.RoomPayload);
+      setUser(message.RoomPayload.Users[user.Guid]);
+      break;
+    }
     default: {
       break;
     }
